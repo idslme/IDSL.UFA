@@ -1,4 +1,4 @@
-# IDSL.UFA<img src='UFA_educational_files/Figures/IDSL.IPA-logo.PNG' width="250px" align="right" />
+# IDSL.UFA<img src='UFA_educational_files/Figures/IDSL.UFA-logo.PNG' width="250px" align="right" />
 
 <!-- badges: start -->
 [![Maintainer](https://img.shields.io/badge/maintainer-Sadjad_Fakouri_Baygi-blue)](https://github.com/sajfb)
