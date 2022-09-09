@@ -1,6 +1,12 @@
 isotopic_profile_calculator <- function(MoleFormVec, Elements_mass_abundance, peak_spacing, intensity_cutoff,
-                                        UFA_IP_memeory_variables = c(1e30, 1e-12)) {
-  ##
+                                        UFA_IP_memeory_variables = c(1e30, 1e-12, 10)) {
+  ##############################################################################
+  on.exit({
+    setTimeLimit(cpu = Inf, elapsed = Inf, transient = FALSE)
+  })
+  #
+  setTimeLimit(elapsed = UFA_IP_memeory_variables[3], transient = TRUE)
+  ##############################################################################
   combination_formula <- function(n, k) {
     factorial(n + k - 1)/factorial(n - 1)/factorial(k)
   }
@@ -40,7 +46,7 @@ isotopic_profile_calculator <- function(MoleFormVec, Elements_mass_abundance, pe
         }
         return(cr)
       }
-      #####################################################################################
+      ##########################################################################
       A <- combinations_repetition(n, k, v)
     }
     Am <- do.call(cbind, lapply(1:k, function(y) { vec[A[, y]]}))
@@ -67,7 +73,7 @@ isotopic_profile_calculator <- function(MoleFormVec, Elements_mass_abundance, pe
     return(X)
   }
   ## Subfunction for element and isotopic combinations
-  SUB_COMB <- function(NumberAtoms, IsotopeMasses, IsotopeCompositions) {
+  SUB_COMB <- function(NumberAtoms, IsotopeMasses, IsotopeCompositions, UFA_IP_memeory_variables2) {
     if (length(IsotopeCompositions) == 1) {
       element_combination <- IsotopeMasses*NumberAtoms
       RAe_element <- IsotopeCompositions
@@ -75,7 +81,7 @@ isotopic_profile_calculator <- function(MoleFormVec, Elements_mass_abundance, pe
       X <- SUB_ISO_PRO(NumberAtoms, IsotopeMasses, IsotopeCompositions)
       element_combination <- X[[1]]
       RAe_element <- X[[2]]
-      x_c <- which(RAe_element > UFA_IP_memeory_variables[2])
+      x_c <- which(RAe_element > UFA_IP_memeory_variables2)
       RAe_element <- RAe_element[x_c]
       element_combination <- element_combination[x_c]
     }
@@ -91,7 +97,7 @@ isotopic_profile_calculator <- function(MoleFormVec, Elements_mass_abundance, pe
   for (i in Non0Elements) {
     IsotopeMasses <- Elements_mass_abundance[[i]][[1]]
     IsotopeCompositions <- Elements_mass_abundance[[i]][[2]]
-    Element_Combo <- SUB_COMB(MoleFormVec[i], IsotopeMasses, IsotopeCompositions)
+    Element_Combo <- SUB_COMB(MoleFormVec[i], IsotopeMasses, IsotopeCompositions, UFA_IP_memeory_variables[2])
     el <- el + 1
     El_Mass[[el]] <- Element_Combo[[1]]
     RAel_El[[el]] <- Element_Combo[[2]]
@@ -110,7 +116,7 @@ isotopic_profile_calculator <- function(MoleFormVec, Elements_mass_abundance, pe
       MW[CounterIsotopicProfile] <<- sum2 # A global variable
     } else {
       for (c in El_Mass[[listIndex]]) {
-        RecursiveMass(El_Mass, N_elements, listIndex + 1, sum2+c)
+        RecursiveMass(El_Mass, N_elements, listIndex + 1, sum2 + c)
       }
     }
   }
@@ -140,8 +146,8 @@ isotopic_profile_calculator <- function(MoleFormVec, Elements_mass_abundance, pe
     B <- B[which(B[, 2] > 1e-12), ]
     B <- B[order(B[, 2], decreasing = TRUE), ]
     if (peak_spacing != 0) {
-      RA2 <- rep(0, L_B)
       MolWeight <- rep(0, L_B)
+      RA2 <- MolWeight
       Counter <- 0
       for (i in 1:dim(B)[1]) {
         if (B[i, 1] != 0) {

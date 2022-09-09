@@ -187,7 +187,7 @@ UFA_score_function_optimization_xlsxAnalyzer <- function(spreadsheet) {
         output_path <- gsub("\\", "/", PARAM_SFT[x0010, 2], fixed = TRUE)
         PARAM_SFT[x0010, 2] <- output_path
         if (!dir.exists(output_path)) {
-          tryCatch(dir.create(output_path), warning = function(w){message("WARNING!!! Problem with SFT0010! R can only create one folder!")})
+          tryCatch(dir.create(output_path, recursive = TRUE), warning = function(w){warning("Problem with SFT0010! R cannot create the folder!")})
           if (!dir.exists(output_path)) {
             checkpoint_parameter <- 0
           }
@@ -402,7 +402,7 @@ UFA_score_function_optimization_xlsxAnalyzer <- function(spreadsheet) {
   }
   if (checkpoint_parameter == FALSE) {
     print("Please visit   https://ufa.idsl.me   for instructions!")
-    PARAM_SFT <- c()
+    PARAM_SFT <- NULL
   }
   return(PARAM_SFT)
 }

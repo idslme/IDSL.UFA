@@ -18,10 +18,10 @@ a pattern to screen
 }
 }
 \details{
-This function returns `NA` when no matches is detected for the pattern.
+This function returns `NA` when no matches are detected for the pattern.
 }
 \value{
-A 2-column matrix of location indices. The first and second columns represent start postions and end positions, respectively.
+A 2-column matrix of location indices. The first and second columns represent start and end positions, respectively.
 }
 \examples{
 pattern <- "Cl"

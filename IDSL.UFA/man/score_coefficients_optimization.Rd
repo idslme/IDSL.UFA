@@ -4,7 +4,7 @@
 Coefficients Score Optimization
 }
 \description{
-This function optimzes the coefficients of the score function.
+This function optimizes the coefficients of the score function.
 }
 \usage{
 score_coefficients_optimization(PARAM_SFT)

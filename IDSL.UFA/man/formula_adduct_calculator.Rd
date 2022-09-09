@@ -4,7 +4,7 @@
 Formula Adduct Calculator
 }
 \description{
-a function that takes a formula and an vecotr of ionization pathways and returns the adduct formulas.
+This function takes a formula and a vector of ionization pathways and returns the adduct formulas.
 }
 \usage{
 formula_adduct_calculator(molecular_formula, IonPathways)

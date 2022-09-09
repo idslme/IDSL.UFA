@@ -4,7 +4,7 @@
 Score Coefficient Evaluation
 }
 \description{
-This function evaluates the efficiency of the optimzation process.
+This function evaluates the efficiency of the optimization process.
 }
 \usage{
 score_coefficient_evaluation(PARAM_SFT)

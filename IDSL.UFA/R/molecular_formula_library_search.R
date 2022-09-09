@@ -1,7 +1,7 @@
 molecular_formula_library_search <- function(MolecularFormulaAnnotationTable, IPDB, MF_library, IonPathways, number_processing_threads = 1) {
-  MolVecMat0 <- IPDB[[2]]
-  Elements <- MolVecMat0[[1]]
-  MolVecMat_DB <- MolVecMat0[[2]]
+  ##
+  Elements <- IPDB[["MolecularFormulaDB"]][["Elements"]]
+  MolVecMat_DB <- IPDB[["MolecularFormulaDB"]][["MolecularFormulaMatrix"]]
   L_Elements <- length(Elements)
   FormulaID <- as.numeric(MolecularFormulaAnnotationTable[, 2])
   L_Table <- length(FormulaID)
@@ -30,7 +30,7 @@ molecular_formula_library_search <- function(MolecularFormulaAnnotationTable, IP
     freq_p <- MF_library[MF_intact]
     x_NA <- which(is.na(freq_p))
     freq_p[x_NA] <- 0
-    names(freq_p) <- c()
+    names(freq_p) <- NULL
     lib_MF_freq <- cbind(MF_intact, freq_p)
     lib_MF_freq <- data.frame(lib_MF_freq)
     colnames(lib_MF_freq) <- c(paste0("MolecluarFormula ", IonPathways[p]), paste0("Frequency_library_", p))

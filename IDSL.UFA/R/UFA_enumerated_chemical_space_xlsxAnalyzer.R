@@ -21,9 +21,9 @@ UFA_enumerated_chemical_space_xlsxAnalyzer <- function(PARAM_MF) {
   x_IP_mem_usage <- which(PARAM_MF$Parameter == "Isotopic profile calculations memory usage")
   IP_mem_usage <- PARAM_MF$`User input 2`[x_IP_mem_usage]
   UFA_IP_memeory_variables <- eval(parse(text = IP_mem_usage))
-  if (length(UFA_IP_memeory_variables) != 2) {
+  if (length(UFA_IP_memeory_variables) != 3) {
     checkpoint_parameter <- 0
-    print("Error!!! Isotopic profile calculations memory usage in the 'enumerated_chemical_space' tab should be a vector of two positive numbers!")
+    print("Error!!! Isotopic profile calculations memory usage in the 'enumerated_chemical_space' tab should be a vector of three positive numbers!")
   }
   ##
   x_npc <- which(PARAM_MF$Parameter == "Number of parallel threads")
@@ -258,7 +258,7 @@ UFA_enumerated_chemical_space_xlsxAnalyzer <- function(PARAM_MF) {
   if (extended_SENIOR_rule_str == "TRUE") {
     ipw_x <- which(PARAM_MF$Parameter == "Ionization pathway")
     ipw <- PARAM_MF$`User input 2`[ipw_x]
-    if (ipw == "[M+H/K/Na]" | ipw == "[M+H]") {
+    if (ipw == "[M+H/K/Na]" | ipw == "[M+H]" | ipw == "[M+K]" | ipw == "[M+Na]") {
       ipw_n <- "-1"
     } else if (ipw == "[M-H]") {
       ipw_n <- "+1"

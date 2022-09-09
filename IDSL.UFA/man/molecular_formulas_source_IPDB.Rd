@@ -4,7 +4,7 @@
 IPDB from a Molecular Formulas Source
 }
 \description{
-This function produces IPDB from a molecular formulas source (A csv file).
+This function produces IPDB from a molecular formulas source (A csv or txt file).
 }
 \usage{
 molecular_formulas_source_IPDB(PARAM_SF)

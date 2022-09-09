@@ -3,9 +3,17 @@ molecular_formulas_source_IPDB <- function(PARAM_SF) {
   ##
   x_csv_file <- which(PARAM_SF[, 1] == "FS0001")
   Molecular_formula_source_file <- gsub("\\", "/", PARAM_SF[x_csv_file, 2], fixed = TRUE)
+  strMoleFormFileLocation <- strsplit(Molecular_formula_source_file, "[.]")[[1]]
+  moleFormFileFormat <- tolower(strMoleFormFileLocation[length(strMoleFormFileLocation)])
   ##
-  molecular_formula <- data.frame(V1 = as.vector(read.csv(Molecular_formula_source_file, header = FALSE)))
-  molecular_formula <-  gsub(" ", "", molecular_formula[, 1])
+  if (moleFormFileFormat == "csv") {
+    molecular_formula <- data.frame(V1 = as.vector(read.csv(Molecular_formula_source_file, header = FALSE)))
+    molecular_formula <- molecular_formula[, 1]
+  } else {
+    molecular_formula <- readLines(Molecular_formula_source_file, warn = FALSE)
+  }
+  ##
+  molecular_formula <-  gsub(" ", "", molecular_formula)
   molecular_formula <-  gsub("[+]", "", molecular_formula)
   molecular_formula <-  gsub("-", "", molecular_formula)
   ##
@@ -22,8 +30,8 @@ molecular_formulas_source_IPDB <- function(PARAM_SF) {
   IPDB <- isotopic_profile_molecular_formula_feeder(molecular_formula, peak_spacing, intensity_cutoff_str, UFA_IP_memeory_variables, IonPathways, number_processing_threads)
   PARAM_SF[x_csv_file, 2] <- NA
   PARAM_SF[x_address_IPDB, 2] <- NA
-  IPDB <- c(IPDB, list(PARAM_SF))
-  names(IPDB) <- c("MassMAIso", "MolecularFormulaDB", "IsotopicProfile", "R13C", "IndexMAIso", "IPsize", "logIPDB")
+  IPDB <- c(list(PARAM_SF), IPDB)
+  names(IPDB) <- c("logIPDB", "AggregatedList", "MassMAIso", "MolecularFormulaDB", "IsotopicProfile", "R13C", "IndexMAIso", "IPsize")
   ##
   print("Initiated saving the isotopic profile database")
   save(IPDB, file = address_IPDB)
@@ -32,4 +40,6 @@ molecular_formulas_source_IPDB <- function(PARAM_SF) {
   closeAllConnections()
   #
   print("Saved isotopic profile database (IPDB) from the source of known molecular formulas!")
+  ##
+  return()
 }

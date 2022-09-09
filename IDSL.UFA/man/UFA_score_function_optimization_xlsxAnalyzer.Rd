@@ -4,7 +4,7 @@
 UFA Score Optimization xlsx Analyzer
 }
 \description{
-This function evalutes the parameter spreadsheet for score coefficients optimization.
+This function evaluates the parameter spreadsheet for score coefficients optimization.
 }
 \usage{
 UFA_score_function_optimization_xlsxAnalyzer(spreadsheet)

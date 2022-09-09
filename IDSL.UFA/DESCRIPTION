@@ -1,18 +1,18 @@
 Package: IDSL.UFA
 Type: Package
 Title: United Formula Annotation (UFA) for HRMS Data Processing
-Version: 1.4
+Version: 1.5
 Authors@R: c(
     person(family = "Fakouri-Baygi", given = "Sadjad", email = "sadjad.fakouri-baygi@mssm.edu",
     role = c("cre","aut"), comment = c(ORCID = "0000-0002-6864-6911")),
     person(family = "Barupal", given = "Dinesh", email = "dinesh.kumar@mssm.edu", role = "aut",
            comment = c(ORCID = "0000-0002-9954-8628")))
 Depends: R (>= 4.0)
-Imports: IDSL.MXP (>= 1.4), xml2, RNetCDF, base64enc, IDSL.IPA (>= 1.7), stats, grid, readxl, parallel, doParallel, foreach, GA, ggplot2, gridExtra
+Imports: IDSL.MXP (>= 1.4), xml2, RNetCDF, base64enc, IDSL.IPA (>= 2.1), stats, grid, readxl, parallel, doParallel, foreach, GA, ggplot2, gridExtra
 Author: Sadjad Fakouri-Baygi [cre, aut] (<https://orcid.org/0000-0002-6864-6911>),
     Dinesh Barupal [aut] (<https://orcid.org/0000-0002-9954-8628>)
 Maintainer: Sadjad Fakouri-Baygi <sadjad.fakouri-baygi@mssm.edu>
-Description: A pipeline to annotate peaklists from the IDSL.IPA package with molecular formula using an isotopic profile matching approach. The IDSL.UFA pipeline is especially beneficial when MS/MS data are not available. The IDSL.UFA package has functions to process user-defined adduct formulas.
+Description: A pipeline to annotate peaklists from the IDSL.IPA package with molecular formula using an isotopic profile matching approach. The IDSL.UFA pipeline is especially beneficial when MS/MS data is not available. The IDSL.UFA package has functions to process user-defined adduct formulas.
 License: MIT + file LICENSE
 URL: https://ufa.idsl.me,
         https://github.com/idslme/idsl.ufa

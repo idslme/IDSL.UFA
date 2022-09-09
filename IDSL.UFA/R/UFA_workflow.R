@@ -29,6 +29,10 @@ UFA_workflow <- function(spreadsheet) {
       address_IPDB <- PARAM[which(PARAM[, 1] == "PARAM0004"), 2]
       print("Loading the isotopic profiles database!")
       IPDB <- loadRdata(address_IPDB)
+      ## Temp
+      if (length(IPDB) != 8) {
+        stop("The selected IPDB is not consistent with the IDSL.UFA version 1.5!")
+      }
       ##
       NPT <- as.numeric(PARAM[which(PARAM[, 1] == "PARAM0009"), 2])
       ##
@@ -57,7 +61,7 @@ UFA_workflow <- function(spreadsheet) {
       output_path <- PARAM[which(PARAM[, 1] == 'PARAM0014'), 2]
       output_path_annotated_mf_tables <- paste0(output_path, "/annotated_mf_tables")
       if (!dir.exists(output_path_annotated_mf_tables)) {
-        dir.create(output_path_annotated_mf_tables)
+        dir.create(output_path_annotated_mf_tables, recursive = TRUE)
       }
       opendir(output_path_annotated_mf_tables)
       ##
@@ -83,8 +87,8 @@ UFA_workflow <- function(spreadsheet) {
       call_molecular_formula_annotation <- function(i) {
         peaklist <- loadRdata(paste0(input_path_pl, "/peaklist_", file_name_hrms[i], ".Rdata"))
         ##
-        outputer003 <- IPA_MSdeconvoluter(input_path_hrms, file_name_hrms[i])
-        spectraList <- outputer003[[1]]
+        outputer <- IDSL.IPA::IPA_MSdeconvoluter(input_path_hrms, file_name_hrms[i])
+        spectraList <- outputer[["spectraList"]]
         ##
         MolecularFormulaAnnotationTable <- molecular_formula_annotator(IPDB, spectraList, peaklist, mass_accuracy, maxNEME, minPCS, minNDCS, minRCS, Score_coeff, number_processing_threads = NPT)
         ##

@@ -15,7 +15,7 @@ UFA spreadsheet
 }
 }
 \value{
-This function orgonizes the UFA file processing for a better perofrmance using the template spreadsheet.
+This function organizes the UFA file processing for better performance using the template spreadsheet.
 }
 \seealso{
 \url{https://ufa.idsl.me/home}

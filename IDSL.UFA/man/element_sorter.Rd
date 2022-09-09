@@ -18,13 +18,13 @@ ElementOrder = c("alphabetical", "same") where "alphabetical" should be used to 
 }
 }
 \value{
-\item{OutputElements}{
+\item{Elements}{
 A string vector of elements (alphabetically sorted or unsorted)
 }
-\item{Elements_mass_abundance}{
+\item{massAbundanceList}{
 A list of isotopic mass and abundance of elements.
 }
-\item{valence}{
+\item{Valence}{
 A vector of electron valences.
 }
 }

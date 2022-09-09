@@ -37,7 +37,7 @@ score_coefficient_evaluation <- function (PARAM_SFT) {
                                           "m/z peaklist", "RT(min)", "PeakHeight", "size IP",
                                           "NEME(mDa)", "PCS", "R13C peakList", "R13C Isotopic Profile",
                                           "NDCS", "RCS(%)", "Rank", "CandidateCount", "CompoundID", "MolFMatch")
-  rownames(Entire_final_list_optimized) <- c()
+  rownames(Entire_final_list_optimized) <- NULL
   save(Entire_final_list_optimized, file = paste0(output_path_score_function_calculations, "/Entire_final_list_optimized.Rdata"))
   obj_function <- gsub(" ", "", tolower(PARAM_SFT[which(PARAM_SFT[, 1] == "SFT0018"), 2]))
   if (obj_function == "toprank") {

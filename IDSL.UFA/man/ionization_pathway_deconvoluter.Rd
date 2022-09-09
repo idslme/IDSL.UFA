@@ -4,7 +4,7 @@
 Ionization Pathway Deconvoluter
 }
 \description{
-This function deconvolutes ionization pathways into a coefficient and a numerical vector to simplify prediction ionization pathwyas.
+This function deconvolutes ionization pathways into a coefficient and a numerical vector to simplify prediction ionization pathways.
 }
 \usage{
 ionization_pathway_deconvoluter(IonPathways, Elements)
@@ -21,7 +21,7 @@ A vector string of the used elements
 A list of adduct calculation values for each ionization pathway.
 }
 \examples{
-Elements <- element_sorter()[[1]]
+Elements <- element_sorter()[["Elements"]]
 IonPathways <- c("[M]+", "[M+H]+", "[2M-Cl]-", "[3M+CO2-H2O+Na-KO2+HCl-NH4]-")
 Ion_DC <- ionization_pathway_deconvoluter(IonPathways, Elements)
 }

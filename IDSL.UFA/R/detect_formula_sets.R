@@ -1,6 +1,6 @@
 detect_formula_sets  <- function(molecular_formulas, ratio_delta_HBrClFI_C, mixed.HBrClFI.allowed, min_molecular_formula_class, max_number_formula_class, number_processing_threads = 1) {
   ##
-  classes_formula_matrix <- c()
+  classes_formula_matrix <- NULL
   ##
   molecular_formulas <- unique(molecular_formulas)
   ## To detect halogenated-saturated compounds such as PFOS or mixed halogenated compounds with hydrogen
@@ -12,21 +12,21 @@ detect_formula_sets  <- function(molecular_formulas, ratio_delta_HBrClFI_C, mixe
   ##
   MMFC <- max(2, min_molecular_formula_class - 1)
   MNC <- max_number_formula_class + 1
-  ################################################################################
+  ##############################################################################
   Elements <- c("As", "Br", "Cl", "Na", "Se", "Si", "B", "C", "F", "H", "I", "K", "N", "O", "P", "S")
   L_Elements <- length(Elements)
   ##
-  molecular_formulasMat_call <- function (k) {
+  molecular_formulasMat_call <- function(k) {
     mol_vec <- formula_vector_generator(molecular_formulas[k], Elements, L_Elements)
     x_neg <- which(mol_vec < 0)
     if (length(x_neg) > 0) {
-      mol_vec <- c()
+      mol_vec <- NULL
     }
     mol_vec
   }
   ##
   if (number_processing_threads == 1) {
-    molecular_formulasMat <- do.call(rbind, lapply(1:length(molecular_formulas), function (k) {
+    molecular_formulasMat <- do.call(rbind, lapply(1:length(molecular_formulas), function(k) {
       molecular_formulasMat_call(k)
     }))
   } else {
@@ -44,7 +44,7 @@ detect_formula_sets  <- function(molecular_formulas, ratio_delta_HBrClFI_C, mixe
       ##
     } else if (osType == "Linux") {
       ##
-      molecular_formulasMat <- do.call(rbind, mclapply(1:length(molecular_formulas), function (k) {
+      molecular_formulasMat <- do.call(rbind, mclapply(1:length(molecular_formulas), function(k) {
         molecular_formulasMat_call(k)
       }, mc.cores = number_processing_threads))
       ##
@@ -65,7 +65,7 @@ detect_formula_sets  <- function(molecular_formulas, ratio_delta_HBrClFI_C, mixe
   colnames(molecular_formulasMat) <- Elements
   ##
   Backbone_Elements <- c("C", "H", "Br", "Cl", "F", "I")
-  MolFormMat1 <- do.call(cbind, lapply(1:L_Elements, function (k) {
+  MolFormMat1 <- do.call(cbind, lapply(1:L_Elements, function(k) {
     i_el <- molecular_formulasMat[, k]
     x_el <- which(Backbone_Elements == Elements[k])
     if (length(x_el) > 0) {
@@ -96,7 +96,7 @@ detect_formula_sets  <- function(molecular_formulas, ratio_delta_HBrClFI_C, mixe
         for (j in 1:(L_class_index - 1)) {
           if (ccc[j] != 0) {
             a1 <- hbrclfi[j]
-            K <- c()
+            K <- NULL
             for (k in (j + 1):L_class_index) {
               if ((ccc[k] != ccc[j]) & (ccc[k] > 0) & (ccc[j] > 0)) {
                 an <- hbrclfi[k]
@@ -134,7 +134,7 @@ detect_formula_sets  <- function(molecular_formulas, ratio_delta_HBrClFI_C, mixe
         for (j in 1:(L_class_index - 1)) {
           if (ccc[j] != 0) {
             a1 <- hbrclfi[j]
-            K <- c()
+            K <- NULL
             for (k in (j + 1):L_class_index) {
               if ((ccc[k] == ccc[j]) & (hbrclfi[k] == hbrclfi[j])  & (ccc[k] > 0) & (ccc[j] > 0)) {
                 K <- c(K, class_index[k])
@@ -188,7 +188,7 @@ detect_formula_sets  <- function(molecular_formulas, ratio_delta_HBrClFI_C, mixe
   }
   ##
   classes_formula_matrix_call <- function(k) {
-    A <- c()
+    A <- NULL
     L_C <- length(classes[[k]])
     if (L_C < MNC) {
       A <- matrix(c(classes[[k]], rep("", (MNC - L_C))), ncol = MNC)
@@ -200,13 +200,13 @@ detect_formula_sets  <- function(molecular_formulas, ratio_delta_HBrClFI_C, mixe
   ##
   if (number_processing_threads == 1) {
     ##
-    I <-  lapply(1:length(unique_molecular_formulas1), function (k) {
+    I <-  lapply(1:length(unique_molecular_formulas1), function(k) {
       I_call(k)
     })
     I <- unlist(I, recursive = FALSE)
     ##
     if (length(I) > 0) {
-      classes <-  lapply(1:length(I), function (k) {
+      classes <-  lapply(1:length(I), function(k) {
         classes_call(k)
       })
       ##
@@ -239,13 +239,13 @@ detect_formula_sets  <- function(molecular_formulas, ratio_delta_HBrClFI_C, mixe
       ##
     } else if (osType == "Linux") {
       ##
-      I <-  mclapply(1:length(unique_molecular_formulas1), function (k) {
+      I <-  mclapply(1:length(unique_molecular_formulas1), function(k) {
         I_call(k)
       }, mc.cores = number_processing_threads)
       I <- unlist(I, recursive = FALSE)
       ##
       if (length(I) > 0) {
-        classes <-  mclapply(1:length(I), function (k) {
+        classes <-  mclapply(1:length(I), function(k) {
           classes_call(k)
         }, mc.cores = number_processing_threads)
         ##
@@ -258,12 +258,13 @@ detect_formula_sets  <- function(molecular_formulas, ratio_delta_HBrClFI_C, mixe
     }
   }
   ##
-  Xcolnames <- sapply(1:max_number_formula_class, function(i) {
+  Xcolnames <- do.call(c, lapply(1:max_number_formula_class, function(i) {
     paste0("Molecularformula_", i)
-  })
-  #
+  }))
+  ##
+  classes_formula_matrix <- data.frame(classes_formula_matrix)
   colnames(classes_formula_matrix) <- c("Class_structure", Xcolnames)
-  rownames(classes_formula_matrix) <- c()
+  rownames(classes_formula_matrix) <- NULL
   ##
   return(classes_formula_matrix)
 }

@@ -19,7 +19,7 @@ hill_molecular_formula_printer <- function(Elements, MolVecMat, number_processin
   MolVecMat <- matrix(MolVecMat, ncol = L_Hill_Elements)
   ##
   MolFormList_call <- function(k) {
-    MolFor <- c()
+    MolFor <- NULL
     MolVec <- MolVecMat[k, ]
     for (i in 1:L_Hill_Elements) {
       x_vec <- x_alpha_hill[i]

@@ -12,7 +12,7 @@ maxNEME, R13C_PL, R13C_IP)
 }
 \arguments{
   \item{Score_coefficients}{
-A vector of seven numbers equal or geater than 0
+A vector of seven numbers equal or greater than 0
 }
   \item{N_isotopologues}{
 Number of isotopologues in the theoretical isotopic profiles.

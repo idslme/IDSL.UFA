@@ -4,8 +4,7 @@
 Molecular Formula Annotator
 }
 \description{
-This module annotate candidate molecular formulas in the
-peaklists from the IDSL.IPA pipeline using isotopic profiles.
+This module annotate candidate molecular formulas in the peaklists from the IDSL.IPA pipeline using isotopic profiles.
 }
 \usage{
 molecular_formula_annotator(IPDB, spectraList, peaklist,

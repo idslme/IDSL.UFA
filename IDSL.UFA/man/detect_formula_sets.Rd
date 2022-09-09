@@ -4,7 +4,7 @@
 Organic Class Detection by Repeated Unit Patterns
 }
 \description{
-This function sorts a vector of molecular formulas to detect organic compound class with reapeted/non-repeated substructure units. This function only works for molecular formulas with following elements: c("As", "Br", "Cl", "Na", "Se", "Si", "B", "C", "F", "H", "I", "K", "N", "O", "P", "S")
+This function sorts a vector of molecular formulas to aggregate organic compound classes with repeated/non-repeated substructure units. This function only works for molecular formulas with following elements: c("As", "Br", "Cl", "Na", "Se", "Si", "B", "C", "F", "H", "I", "K", "N", "O", "P", "S")
 }
 \usage{
 detect_formula_sets(molecular_formulas, ratio_delta_HBrClFI_C,
@@ -22,7 +22,7 @@ c(2, 1/2, 0).
 0 to detect molecular formulas with a fixed structures but changing H/Br/Cl/F/I atoms similar to PCBs, PBDEs, etc.
 }
   \item{mixed.HBrClFI.allowed}{
-mixed.HBrClFI.allowed = c(TRUE, FALSE). Select `FALSE` to detect halogenated-saturated compounds such as PFOS or select `TRUE` to detect mixed halogenated compounds with hydrogen.
+mixed.HBrClFI.allowed = c(TRUE, FALSE). Select `FALSE` to detect halogenated-saturated compounds similar to PFOS or select `TRUE` to detect mixed halogenated compounds with hydrogen.
 }
   \item{min_molecular_formula_class}{
 minimum number of molecular formulas in each class. This number should be greater than or equal to 2.
@@ -42,7 +42,7 @@ molecular_formulas <- c("C3F7O3S", "C4F9O3S", "C5F11O3S", "C6F9O3S", "C8F17O3S",
 "C9F19O3S", "C10F21O3S", "C7ClF14O4", "C10ClF20O4", "C11ClF22O4", "C11Cl2F21O4",
 "C12ClF24O4")
 ##
-ratio_delta_HBrClFI_C <- 2 # to class polymeric classes
+ratio_delta_HBrClFI_C <- 2 # to aggregate polymeric classes
 mixed.HBrClFI.allowed <- FALSE # To detect only halogen saturated classes
 min_molecular_formula_class <- 2
 max_number_formula_class <- 20

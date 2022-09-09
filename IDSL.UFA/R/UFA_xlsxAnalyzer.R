@@ -70,14 +70,13 @@ UFA_xlsxAnalyzer <- function(spreadsheet) {
     ##
     x0004 <- which(PARAM[, 1] == 'PARAM0004')
     x0005 <- PARAM[which(PARAM[, 1] == 'PARAM0005'), 2]
-    x0006 <- PARAM[which(PARAM[, 1] == 'PARAM0006'), 2]
-    if (tolower(x0001) == "no" & (tolower(x0005) == "yes" | tolower(x0006) == "yes")) {
+    if (tolower(x0001) == "no" & (tolower(x0005) == "yes")) {
       PARAM0004 <- PARAM[x0004, 2]
       PARAM0004 <- gsub("\\", "/", PARAM0004, fixed = TRUE)
       PARAM[x0004, 2] <- PARAM0004
       if (!is.na(PARAM0004)) {
         if (!file.exists(PARAM0004)) {
-          print("ERROR!!! Problem with PARAM0004! The isotopic profile database file is not available")
+          print("ERROR!!! Problem with PARAM0004! The isotopic profile database (IPDB) file is not available!")
           checkpoint_parameter <- FALSE
         }
       } else {
@@ -96,6 +95,7 @@ UFA_xlsxAnalyzer <- function(spreadsheet) {
       }
     }
     ##
+    x0006 <- PARAM[which(PARAM[, 1] == 'PARAM0006'), 2]
     if (length(x0006) == 0) {
       print("ERROR!!! Problem with PARAM0006!")
       checkpoint_parameter <- FALSE
@@ -212,7 +212,7 @@ UFA_xlsxAnalyzer <- function(spreadsheet) {
       if (dir.exists(input_path_pl)) {
         file_names_peaklist1 <- dir(path = input_path_pl, pattern = ".Rdata")
         file_names_peaklist2 <- dir(path = input_path_pl, pattern = "peaklist_")
-        file_names_peaklist <- file_names_peaklist1[file_names_peaklist1%in%file_names_peaklist2]
+        file_names_peaklist <- file_names_peaklist1[file_names_peaklist1 %in% file_names_peaklist2]
         ##
         if (dir.exists(input_path_hrms)) {
           if (tolower(PARAM[which(PARAM[, 1] == 'PARAM0011'), 2]) == "all") {
@@ -225,7 +225,7 @@ UFA_xlsxAnalyzer <- function(spreadsheet) {
           ##
           file_names_peaklist_hrms1 <- gsub(".Rdata", "", file_names_peaklist)
           file_names_peaklist_hrms2 <- gsub("peaklist_", "", file_names_peaklist_hrms1)
-          file_names_peaklist_hrms <- file_name_hrms%in%file_names_peaklist_hrms2
+          file_names_peaklist_hrms <- file_name_hrms %in% file_names_peaklist_hrms2
           L_PL <- length(which(file_names_peaklist_hrms == TRUE))
           if (length(file_name_hrms) != L_PL) {
             checkpoint_parameter <- FALSE
@@ -244,7 +244,7 @@ UFA_xlsxAnalyzer <- function(spreadsheet) {
         output_path <- gsub("\\", "/", PARAM[x0014, 2], fixed = TRUE)
         PARAM[x0014, 2] <- output_path
         if (!dir.exists(output_path)) {
-          tryCatch(dir.create(output_path), warning = function(w){message("WARNING!!! Problem with PARAM0014! R can only create one folder!")})
+          tryCatch(dir.create(output_path, recursive = TRUE), warning = function(w){warning("Problem with PARAM0014! R cannot create the folder!")})
           if (!dir.exists(output_path)) {
             checkpoint_parameter <- FALSE
           }
@@ -385,13 +385,13 @@ UFA_xlsxAnalyzer <- function(spreadsheet) {
       ##
       x0026 <- which(PARAM[, 1] == 'PARAM0026')
       if (length(x0026) == 0) {
-        print("ERROR!!! Problem with PARAM0026! The aligned peak height table is not available!")
+        print("ERROR!!! Problem with PARAM0026! The aligned peak property table is not available!")
         checkpoint_parameter <- FALSE
       } else {
         ipa_height_path <- gsub("\\", "/", PARAM[x0026, 2], fixed = TRUE)
         PARAM[x0026, 2] <- ipa_height_path
         if (!file.exists(ipa_height_path)) {
-          print("ERROR!!! Problem with PARAM0026! The aligned peak height table is not available!")
+          print("ERROR!!! Problem with PARAM0026! The aligned peak property table is not available!")
           checkpoint_parameter <- FALSE
         }
       }
@@ -432,7 +432,7 @@ UFA_xlsxAnalyzer <- function(spreadsheet) {
     ############################ IPDB production ###############################
     if (tolower(x0001) == "yes") {
       if (tolower(x0002) == "yes") {
-        print("Initiated analyzing the enumerated_chemical_space sheet!")
+        print("Initiated analyzing the `enumerated_chemical_space` tab!")
         ##
         PARAM_MF <- readxl::read_xlsx(spreadsheet, sheet = "enumerated_chemical_space")
         x_address_IPDB <- which(PARAM_MF$Parameter == "IPDB output address")
@@ -442,10 +442,10 @@ UFA_xlsxAnalyzer <- function(spreadsheet) {
         PARAM[x0004, 2] <- address_IPDB
         ##
         checkpoint_parameter <- UFA_enumerated_chemical_space_xlsxAnalyzer(PARAM_MF)
-        print("Completed analyzing the enumerated_chemical_space sheet!")
+        print("Completed analyzing the `enumerated_chemical_space` tab!")
       }
       if (tolower(x0003) == "yes") {
-        print("Initiated analyzing the formula source sheet!")
+        print("Initiated analyzing the `formula_source` tab!")
         PARAM_SF <- readxl::read_xlsx(spreadsheet, sheet = "formula_source")
         PARAM_SF <- cbind(PARAM_SF[, 2], PARAM_SF[, 4])
         ##
@@ -480,8 +480,8 @@ UFA_xlsxAnalyzer <- function(spreadsheet) {
         }
         ##
         fs0004 <- tryCatch(eval(parse(text = paste0("c(", PARAM_SF[which(PARAM_SF[, 1] == 'FS0004'), 2], ")"))), error = function(e){NULL})
-        if (length(fs0004) != 2) {
-          print("ERROR!!! Problem with FS0004! This parameter should be a vector of two positive numbers!")
+        if (length(fs0004) != 3) {
+          print("ERROR!!! Problem with FS0004! This parameter should be a vector of three positive numbers!")
           checkpoint_parameter <- FALSE
         }
         ##
@@ -513,7 +513,7 @@ UFA_xlsxAnalyzer <- function(spreadsheet) {
         address_IPDB <- gsub("\\", "/", address_IPDB, fixed = TRUE)
         PARAM[x0004, 2] <- address_IPDB
         ##
-        print("Completed analyzing the formula source sheet!")
+        print("Completed analyzing the `formula_source` tab!")
       }
     }
     if (tolower(x0007) == "yes") {
@@ -531,7 +531,7 @@ UFA_xlsxAnalyzer <- function(spreadsheet) {
   }
   if (checkpoint_parameter == FALSE) {
     print("Please visit   https://ufa.idsl.me    for instructions!")
-    PARAM <- c()
+    PARAM <- NULL
   }
   return(PARAM)
 }

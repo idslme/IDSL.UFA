@@ -8,7 +8,7 @@ This function was designed to calculate isotopic profile distributions for small
 }
 \usage{
 isotopic_profile_calculator(MoleFormVec, Elements_mass_abundance, peak_spacing,
-intensity_cutoff, UFA_IP_memeory_variables = c(1e30, 1e-12))
+intensity_cutoff, UFA_IP_memeory_variables = c(1e30, 1e-12, 10))
 }
 \arguments{
   \item{MoleFormVec}{
@@ -21,15 +21,14 @@ A list of isotopic mass and abundance of elements obtained from the `element_sor
 A maximum space between two isotopologues in Da
 }
   \item{intensity_cutoff}{
-A minimum intesnity threshold for isotopic profiles in percentage
+A minimum intensity threshold for isotopic profiles in percentage
 }
   \item{UFA_IP_memeory_variables}{
-A vector of two variables. Default values are c(1e30, 1e-12). Memory may be an issue when the entire isotopologues are calculated; therefore, memeory_variables[1] is used to adjust memory usage. memeory_variables[2] indicates the minimum relative abundance (RA calcaulated by eq(1) in the reference [1]) of an isotopologue to include in the isotopic profile calculations.
+A vector of three variables. Default values are c(1e30, 1e-12, 10). Memory may be an issue when the entire isotopologues are calculated; therefore, UFA_IP_memeory_variables[1] is used to adjust memory usage. UFA_IP_memeory_variables[2] indicates the minimum relative abundance (RA calculated by eq(1) in the reference [1]) of an isotopologue to include in the isotopic profile calculations. UFA_IP_memeory_variables[3] is the maximum elapsed time to calculate the isotopic profile on the `setTimeLimit` function of base R.
 }
 }
 \value{
-A matrix of isotopic profile. The first and second column represents the mass
-and instensity profiles, respectively.
+A matrix of isotopic profile. The first and second column represents the mass and intensity profiles, respectively.
 }
 \references{
 [1] Fakouri Baygi, S., Crimmins, B.S., Hopke, P.K. Holsen, T.M. (2016). Comprehensive emerging chemical discovery: novel polyfluorinated compounds in Lake Michigan trout. \emph{Environmental Science and Technology}, 50(17), 9460-9468, \doi{10.1021/acs.est.6b01349}.

@@ -166,8 +166,8 @@ UFA_profile_visualizer_xlsxAnalyzer <- function (spreadsheet) {
       checkpoint_parameter <- FALSE
     }
     SA0007 <- tryCatch(eval(parse(text = paste0("c(", PARAM_SA[which(PARAM_SA[, 1] == "SA0007"), 2], ")"))), error = function(e){NULL})
-    if (length(SA0007) != 2) {
-      print("ERROR!!! Problem with SA0008! This parameter should be a vector of two positive numbers!")
+    if (length(SA0007) != 3) {
+      print("ERROR!!! Problem with SA0008! This parameter should be a vector of three positive numbers!")
       checkpoint_parameter <- FALSE
     }
     SA0008 <- as.numeric(PARAM_SA[which(PARAM_SA[, 1] == "SA0008"), 2])
@@ -226,7 +226,7 @@ UFA_profile_visualizer_xlsxAnalyzer <- function (spreadsheet) {
   }
   if (checkpoint_parameter == FALSE) {
     print("Please visit   https://ufa.idsl.me    for instructions!")
-    PARAM_SA <- c()
+    PARAM_SA <- NULL
   }
   return(PARAM_SA)
 }

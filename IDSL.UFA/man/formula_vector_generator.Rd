@@ -17,7 +17,7 @@ molecular formula
 a string vector of elements. This value must be driven from the `element_sorter` function.
 }
   \item{L_Elements}{
-number of elements. To speed up loop calculations, consider to calculate number of elements outside of the loop.
+number of elements. To speed up loop calculations, consider calculating the number of elements outside of the loop.
 }
 }
 \value{

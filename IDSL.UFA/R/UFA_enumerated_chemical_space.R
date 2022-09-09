@@ -1,4 +1,5 @@
 UFA_enumerated_chemical_space <- function(PARAM_MF) {
+  ##
   print("Initiated isotopic profile database (IPDB) production through the enumerating chemical space approach!")
   ##
   x_address_IPDB <- which(PARAM_MF$Parameter == "IPDB output address")
@@ -126,24 +127,24 @@ UFA_enumerated_chemical_space <- function(PARAM_MF) {
   Essential_Elements <- c("C", "B", "Br", "Cl", "K", "S", "Se", "Si")
   L_Essential_Elements <- length(Essential_Elements)
   EL_ESSE <- element_sorter(ElementList = Essential_Elements, ElementOrder = "same")
-  Essential_Elements_mass_abundance <- EL_ESSE[[2]]
+  Essential_Elements_mass_abundance <- EL_ESSE[["massAbundanceList"]]
   ##############################################################################
   Ess_IPDB_mat_call <- function(counter) {
     IPP <- Ess_IP[[counter]]
     x_100 <- which.max(IPP[, 2])
     L_IPP <- length(IPP[, 2])
     ##
-    r13c_ip <- 0
+    IP_R13C <- 0
     if (L_IPP > x_100) {
       M13C <- abs(IPP[, 1] - IPP[x_100, 1] - 1.00335484)
       M13C <- M13C[(x_100 + 1):L_IPP]
       x_101 <- which.min(M13C)[1]
       if (M13C[x_101] <= 0.015) {
         x_101 <- x_101 + x_100
-        r13c_ip <- IPP[x_101, 2]/IPP[x_100, 2]*100
+        IP_R13C <- IPP[x_101, 2]/IPP[x_100, 2]*100
       }
     }
-    c(IPP[L_IPP, 1], IPP[x_100, 1], r13c_ip, x_100, L_IPP)
+    c(IPP[L_IPP, 1], IPP[x_100, 1], IP_R13C, x_100, L_IPP)
   }
   ##############################################################################
   MolVecMat_call <- "MolVecMat_call <- function(counter) {
@@ -260,7 +261,7 @@ UFA_enumerated_chemical_space <- function(PARAM_MF) {
   if (extended_SENIOR_rule_str == "TRUE") {
     ipw_x <- which(PARAM_MF$Parameter == "Ionization pathway")
     ipw <- PARAM_MF$`User input 2`[ipw_x]
-    if (ipw == "[M+H/K/Na]" | ipw == "[M+H]") {
+    if (ipw == "[M+H/K/Na]" | ipw == "[M+H]" | ipw == "[M+K]" | ipw == "[M+Na]") {
       ipw_n <- "-1"
     } else if (ipw == "[M-H]") {
       ipw_n <- "+1"
@@ -277,7 +278,7 @@ UFA_enumerated_chemical_space <- function(PARAM_MF) {
   L_ElementsAlphabetical_1 <- L_ElementsAlphabetical + 1
   if (extended_SENIOR_rule_str == "TRUE") {
     EL_Alphabetical <- element_sorter(ElementList = ElementsAlphabetical, ElementOrder = "same")
-    valence_vec <- EL_Alphabetical[[3]]
+    valence_vec <- EL_Alphabetical[["Valence"]]
   }
   ##############################################################################
   NoNEss_mass_call <- function(counter) {
@@ -287,27 +288,25 @@ UFA_enumerated_chemical_space <- function(PARAM_MF) {
   ##
   NonEssential_Elements <- c("H", "As", "F", "I", "N", "Na", "O", "P")
   EL_NoNESSE <- element_sorter(ElementList = NonEssential_Elements, ElementOrder = "same")
-  NonEssential_Elements_mass_abundance <- EL_NoNESSE[[2]]
+  NonEssential_Elements_mass_abundance <- EL_NoNESSE[["massAbundanceList"]]
   ##############################################################################
-  osType <- Sys.info()[['sysname']]
-  if (osType == "Windows") {
-    clust <- makeCluster(number_processing_threads)
-    registerDoParallel(clust)
+  print("Initiated calculating isotopic profiles for essential elements!")
+  ##
+  if (number_processing_threads == 1) {
     ##
-    print("Initiated calculating isotopic profiles for essential elements!")
-    Ess_MolVecMat <- foreach(c = c_xyz1:c_xyz2, .combine = 'rbind', .verbose = FALSE) %dopar% {
+    Ess_MolVecMat <- do.call(rbind, lapply(c_xyz1:c_xyz2, function(c) {
       Ess_MolVecMat_call(c)
-    }
+    }))
     Ess_MolVecMat <- matrix(Ess_MolVecMat, ncol = L_Essential_Elements)
     L_Ess_MolVecMat <- dim(Ess_MolVecMat)[1]
     ##
-    Ess_IP <- foreach(counter = 1:L_Ess_MolVecMat, .verbose = FALSE) %dopar% {
+    Ess_IP <- lapply(1:L_Ess_MolVecMat, function(counter) {
       Ess_IP_call(counter)
-    }
+    })
     ##
-    Ess_IPDB_mat <- foreach(counter = 1:L_Ess_MolVecMat, .combine = 'rbind', .verbose = FALSE) %dopar% {
+    Ess_IPDB_mat <- do.call(rbind, lapply(1:L_Ess_MolVecMat, function(counter) {
       Ess_IPDB_mat_call(counter)
-    }
+    }))
     #
     x_Ess_IP <- which(Ess_IPDB_mat[, 1] <= HIGHEST_mass)
     Ess_MolVecMat <- matrix(Ess_MolVecMat[x_Ess_IP, ], ncol = L_Essential_Elements)
@@ -318,9 +317,9 @@ UFA_enumerated_chemical_space <- function(PARAM_MF) {
     print(paste0("Completed calculating isotopic profiles for essential elements with ", L_Ess_MolVecMat, " combinations!"))
     ##
     print("Initiated enumerating molecular formulas!")
-    MolVecMat <- foreach(counter = 1:L_Ess_MolVecMat, .combine = 'rbind', .verbose = FALSE) %dopar% {
+    MolVecMat <- do.call(rbind, lapply(1:L_Ess_MolVecMat, function(counter) {
       MolVecMat_call(counter)
-    }
+    }))
     MolVecMat <- matrix(MolVecMat, ncol = L_ElementsAlphabetical_1)
     L_MolVecMat <- dim(MolVecMat)[1]
     ##
@@ -334,9 +333,9 @@ UFA_enumerated_chemical_space <- function(PARAM_MF) {
     o <- MolVecMat[, 12]
     p <- MolVecMat[, 13]
     #
-    NoNEss_mass <- foreach(counter = 1:L_MolVecMat, .combine = 'rbind', .verbose = FALSE) %dopar% {
+    NoNEss_mass <- do.call(rbind, lapply(1:L_MolVecMat, function(counter) {
       NoNEss_mass_call(counter)
-    }
+    }))
     #
     h <- 0
     as <- 0
@@ -357,91 +356,172 @@ UFA_enumerated_chemical_space <- function(PARAM_MF) {
     print(paste0("Completed calculating masses for ", L_NoNEss_mass, " molecular formula combinations!"))
     ##
     print("Initiated creating the isotopic profile database!")
-    x_IP <- unique(c(0, which(diff(MolVecMat[, L_ElementsAlphabetical_1]) > 0), L_MolVecMat))
+    x_IP <- c(0, which(abs(diff(MolVecMat[, L_ElementsAlphabetical_1])) > 0), L_MolVecMat)
     #
     L_IP_combination <- length(x_IP) - 1
-    ID_IP <- foreach(counter = 2:(L_IP_combination + 1), .combine = 'rbind', .verbose = FALSE) %dopar% {
+    ID_IP <- do.call(rbind, lapply(2:(L_IP_combination + 1), function(counter) {
       row_number_first <- (x_IP[counter - 1] + 1)
       c(row_number_first, x_IP[counter], MolVecMat[row_number_first, L_ElementsAlphabetical_1])
-    }
+    }))
     ##
-    stopCluster(clust)
+  } else {
+    osType <- Sys.info()[['sysname']]
     ##
-  } else if (osType == "Linux") {
-    ##
-    print("Initiated calculating isotopic profiles for essential elements!")
-    Ess_MolVecMat <- do.call(rbind, mclapply(c_xyz1:c_xyz2, function(c) {
-      Ess_MolVecMat_call(c)
-    }, mc.cores = number_processing_threads))
-    Ess_MolVecMat <- matrix(Ess_MolVecMat, ncol = L_Essential_Elements)
-    L_Ess_MolVecMat <- dim(Ess_MolVecMat)[1]
-    ##
-    Ess_IP <- mclapply(1:L_Ess_MolVecMat, function(counter) {
-      Ess_IP_call(counter)
-    }, mc.cores = number_processing_threads)
-    ##
-    Ess_IPDB_mat <- do.call(rbind, mclapply(1:L_Ess_MolVecMat, function(counter) {
-      Ess_IPDB_mat_call(counter)
-    }, mc.cores = number_processing_threads))
-    #
-    x_Ess_IP <- which(Ess_IPDB_mat[, 1] <= HIGHEST_mass)
-    Ess_MolVecMat <- matrix(Ess_MolVecMat[x_Ess_IP, ], ncol = L_Essential_Elements)
-    Ess_IPDB_mat <- matrix(Ess_IPDB_mat[x_Ess_IP, ], ncol = 5)
-    Ess_IPDB_mat <- matrix(Ess_IPDB_mat[, -1], ncol = 4)
-    Ess_IP <- Ess_IP[x_Ess_IP]
-    L_Ess_MolVecMat <- length(x_Ess_IP)
-    print(paste0("Completed calculating isotopic profiles for essential elements with ", L_Ess_MolVecMat, " combinations!"))
-    ##
-    print("Initiated enumerating molecular formulas!")
-    MolVecMat <- do.call(rbind, mclapply(1:L_Ess_MolVecMat, function(counter) {
-      MolVecMat_call(counter)
-    }, mc.cores = number_processing_threads))
-    MolVecMat <- matrix(MolVecMat, ncol = L_ElementsAlphabetical_1)
-    L_MolVecMat <- dim(MolVecMat)[1]
-    ##
-    print(paste0("Initiated calculating masses for ", L_MolVecMat, " enumerated molecular formulas!"))
-    h <- MolVecMat[, 2]
-    as <- MolVecMat[, 3]
-    f <- MolVecMat[, 7]
-    i <- MolVecMat[, 8]
-    n <- MolVecMat[, 10]
-    na <- MolVecMat[, 11]
-    o <- MolVecMat[, 12]
-    p <- MolVecMat[, 13]
-    #
-    NoNEss_mass <- do.call(rbind, mclapply(1:L_MolVecMat, function(counter) {
-      NoNEss_mass_call(counter)
-    }, mc.cores = number_processing_threads))
-    #
-    h <- 0
-    as <- 0
-    f <- 0
-    i <- 0
-    n <- 0
-    na <- 0
-    o <- 0
-    p <- 0
-    #
-    x_mass <- which(NoNEss_mass <= (HIGHEST_mass - 12*c_xyz1)) # which greater than one carbon atom mass
-    L_NoNEss_mass <- length(x_mass)
-    if (L_NoNEss_mass < L_MolVecMat) {
-      NoNEss_mass <- NoNEss_mass[x_mass]
-      MolVecMat <- matrix(MolVecMat[x_mass, ], ncol = L_ElementsAlphabetical_1)
+    if (osType == "Linux") {
+      ##
+      Ess_MolVecMat <- do.call(rbind, mclapply(c_xyz1:c_xyz2, function(c) {
+        Ess_MolVecMat_call(c)
+      }, mc.cores = number_processing_threads))
+      Ess_MolVecMat <- matrix(Ess_MolVecMat, ncol = L_Essential_Elements)
+      L_Ess_MolVecMat <- dim(Ess_MolVecMat)[1]
+      ##
+      Ess_IP <- mclapply(1:L_Ess_MolVecMat, function(counter) {
+        Ess_IP_call(counter)
+      }, mc.cores = number_processing_threads)
+      ##
+      Ess_IPDB_mat <- do.call(rbind, mclapply(1:L_Ess_MolVecMat, function(counter) {
+        Ess_IPDB_mat_call(counter)
+      }, mc.cores = number_processing_threads))
+      #
+      x_Ess_IP <- which(Ess_IPDB_mat[, 1] <= HIGHEST_mass)
+      Ess_MolVecMat <- matrix(Ess_MolVecMat[x_Ess_IP, ], ncol = L_Essential_Elements)
+      Ess_IPDB_mat <- matrix(Ess_IPDB_mat[x_Ess_IP, ], ncol = 5)
+      Ess_IPDB_mat <- matrix(Ess_IPDB_mat[, -1], ncol = 4)
+      Ess_IP <- Ess_IP[x_Ess_IP]
+      L_Ess_MolVecMat <- length(x_Ess_IP)
+      print(paste0("Completed calculating isotopic profiles for essential elements with ", L_Ess_MolVecMat, " combinations!"))
+      ##
+      print("Initiated enumerating molecular formulas!")
+      MolVecMat <- do.call(rbind, mclapply(1:L_Ess_MolVecMat, function(counter) {
+        MolVecMat_call(counter)
+      }, mc.cores = number_processing_threads))
+      MolVecMat <- matrix(MolVecMat, ncol = L_ElementsAlphabetical_1)
       L_MolVecMat <- dim(MolVecMat)[1]
+      ##
+      print(paste0("Initiated calculating masses for ", L_MolVecMat, " enumerated molecular formulas!"))
+      h <- MolVecMat[, 2]
+      as <- MolVecMat[, 3]
+      f <- MolVecMat[, 7]
+      i <- MolVecMat[, 8]
+      n <- MolVecMat[, 10]
+      na <- MolVecMat[, 11]
+      o <- MolVecMat[, 12]
+      p <- MolVecMat[, 13]
+      #
+      NoNEss_mass <- do.call(rbind, mclapply(1:L_MolVecMat, function(counter) {
+        NoNEss_mass_call(counter)
+      }, mc.cores = number_processing_threads))
+      #
+      h <- 0
+      as <- 0
+      f <- 0
+      i <- 0
+      n <- 0
+      na <- 0
+      o <- 0
+      p <- 0
+      #
+      x_mass <- which(NoNEss_mass <= (HIGHEST_mass - 12*c_xyz1)) # which greater than one carbon atom mass
+      L_NoNEss_mass <- length(x_mass)
+      if (L_NoNEss_mass < L_MolVecMat) {
+        NoNEss_mass <- NoNEss_mass[x_mass]
+        MolVecMat <- matrix(MolVecMat[x_mass, ], ncol = L_ElementsAlphabetical_1)
+        L_MolVecMat <- dim(MolVecMat)[1]
+      }
+      print(paste0("Completed calculating masses for ", L_NoNEss_mass, " molecular formula combinations!"))
+      ##
+      print("Initiated creating the isotopic profile database!")
+      x_IP <- c(0, which(abs(diff(MolVecMat[, L_ElementsAlphabetical_1])) > 0), L_MolVecMat)
+      #
+      L_IP_combination <- length(x_IP) - 1
+      ID_IP <- do.call(rbind, mclapply(2:(L_IP_combination + 1), function(counter) {
+        row_number_first <- (x_IP[counter - 1] + 1)
+        c(row_number_first, x_IP[counter], MolVecMat[row_number_first, L_ElementsAlphabetical_1])
+      }, mc.cores = number_processing_threads))
+      ##
+      closeAllConnections()
+      ##
+    } else if (osType == "Windows") {
+      ##
+      clust <- makeCluster(number_processing_threads)
+      registerDoParallel(clust)
+      ##
+      Ess_MolVecMat <- foreach(c = c_xyz1:c_xyz2, .combine = 'rbind', .verbose = FALSE) %dopar% {
+        Ess_MolVecMat_call(c)
+      }
+      Ess_MolVecMat <- matrix(Ess_MolVecMat, ncol = L_Essential_Elements)
+      L_Ess_MolVecMat <- dim(Ess_MolVecMat)[1]
+      ##
+      Ess_IP <- foreach(counter = 1:L_Ess_MolVecMat, .verbose = FALSE) %dopar% {
+        Ess_IP_call(counter)
+      }
+      ##
+      Ess_IPDB_mat <- foreach(counter = 1:L_Ess_MolVecMat, .combine = 'rbind', .verbose = FALSE) %dopar% {
+        Ess_IPDB_mat_call(counter)
+      }
+      #
+      x_Ess_IP <- which(Ess_IPDB_mat[, 1] <= HIGHEST_mass)
+      Ess_MolVecMat <- matrix(Ess_MolVecMat[x_Ess_IP, ], ncol = L_Essential_Elements)
+      Ess_IPDB_mat <- matrix(Ess_IPDB_mat[x_Ess_IP, ], ncol = 5)
+      Ess_IPDB_mat <- matrix(Ess_IPDB_mat[, -1], ncol = 4)
+      Ess_IP <- Ess_IP[x_Ess_IP]
+      L_Ess_MolVecMat <- length(x_Ess_IP)
+      print(paste0("Completed calculating isotopic profiles for essential elements with ", L_Ess_MolVecMat, " combinations!"))
+      ##
+      print("Initiated enumerating molecular formulas!")
+      MolVecMat <- foreach(counter = 1:L_Ess_MolVecMat, .combine = 'rbind', .verbose = FALSE) %dopar% {
+        MolVecMat_call(counter)
+      }
+      MolVecMat <- matrix(MolVecMat, ncol = L_ElementsAlphabetical_1)
+      L_MolVecMat <- dim(MolVecMat)[1]
+      ##
+      print(paste0("Initiated calculating masses for ", L_MolVecMat, " enumerated molecular formulas!"))
+      h <- MolVecMat[, 2]
+      as <- MolVecMat[, 3]
+      f <- MolVecMat[, 7]
+      i <- MolVecMat[, 8]
+      n <- MolVecMat[, 10]
+      na <- MolVecMat[, 11]
+      o <- MolVecMat[, 12]
+      p <- MolVecMat[, 13]
+      #
+      NoNEss_mass <- foreach(counter = 1:L_MolVecMat, .combine = 'rbind', .verbose = FALSE) %dopar% {
+        NoNEss_mass_call(counter)
+      }
+      #
+      h <- 0
+      as <- 0
+      f <- 0
+      i <- 0
+      n <- 0
+      na <- 0
+      o <- 0
+      p <- 0
+      #
+      x_mass <- which(NoNEss_mass <= (HIGHEST_mass - 12*c_xyz1)) # which greater than one carbon atom mass
+      L_NoNEss_mass <- length(x_mass)
+      if (L_NoNEss_mass < L_MolVecMat) {
+        NoNEss_mass <- NoNEss_mass[x_mass]
+        MolVecMat <- matrix(MolVecMat[x_mass, ], ncol = L_ElementsAlphabetical_1)
+        L_MolVecMat <- dim(MolVecMat)[1]
+      }
+      print(paste0("Completed calculating masses for ", L_NoNEss_mass, " molecular formula combinations!"))
+      ##
+      print("Initiated creating the isotopic profile database!")
+      x_IP <- c(0, which(diff(MolVecMat[, L_ElementsAlphabetical_1]) > 0), L_MolVecMat)
+      #
+      L_IP_combination <- length(x_IP) - 1
+      ID_IP <- foreach(counter = 2:(L_IP_combination + 1), .combine = 'rbind', .verbose = FALSE) %dopar% {
+        row_number_first <- (x_IP[counter - 1] + 1)
+        c(row_number_first, x_IP[counter], MolVecMat[row_number_first, L_ElementsAlphabetical_1])
+      }
+      ##
+      stopCluster(clust)
+      ##
     }
-    print(paste0("Completed calculating masses for ", L_NoNEss_mass, " molecular formula combinations!"))
-    ##
-    print("Initiated creating the isotopic profile database!")
-    x_IP <- unique(c(0, which(diff(MolVecMat[, L_ElementsAlphabetical_1]) > 0), L_MolVecMat))
-    #
-    L_IP_combination <- length(x_IP) - 1
-    ID_IP <- do.call(rbind, mclapply(2:(L_IP_combination + 1), function(counter) {
-      row_number_first <- (x_IP[counter - 1] + 1)
-      c(row_number_first, x_IP[counter], MolVecMat[row_number_first, L_ElementsAlphabetical_1])
-    }, mc.cores = number_processing_threads))
-    ##
-    closeAllConnections()
   }
+  ##
+  ##############################################################################
   ##
   MolVecMat <- matrix(MolVecMat[, -L_ElementsAlphabetical_1], ncol = L_ElementsAlphabetical)
   ##
@@ -453,7 +533,7 @@ UFA_enumerated_chemical_space <- function(PARAM_MF) {
     counter_ip_export <- list()
     IPP <- Ess_IP[[counter]]
     IP_profile <- round(IPP[, 2], 3)
-    r13c_ip <- round(Ess_IPDB_mat[counter, 2], 3)
+    IP_R13C <- round(Ess_IPDB_mat[counter, 2], 3)
     x_100 <- Ess_IPDB_mat[counter, 3]
     L_IPP <- Ess_IPDB_mat[counter, 4]
     for (j in ID_IP[i, 1]:ID_IP[i, 2]) {
@@ -462,13 +542,13 @@ UFA_enumerated_chemical_space <- function(PARAM_MF) {
         Counter_IP <- Counter_IP + 1
         IP_mass <- round(IP_mass, 6)
         IP <- cbind(IP_mass, IP_profile)
-        counter_ip_export[[Counter_IP]] <- list(ipl = j, ipm = IP_mass[x_100], ipp = IP, r13c = r13c_ip, i_100 = x_100, lip = L_IPP)
+        counter_ip_export[[Counter_IP]] <- list(ipl = j, ipm = IP_mass[x_100], ipp = IP, r13c = IP_R13C, i_100 = x_100, lip = L_IPP)
       }
     }
     counter_ip_export
   })
   close(progressBARboundaries)
-  Ess_IP <- c()
+  Ess_IP <- NULL
   NoNEss_mass <- 0
   ip_export <- unlist(ip_export, recursive = FALSE)
   L_ip_export <- length(ip_export)
@@ -481,10 +561,10 @@ UFA_enumerated_chemical_space <- function(PARAM_MF) {
   }))
   MolVecMat <- matrix(MolVecMat[xMolVecMat, ], ncol = L_ElementsAlphabetical)
   #
-  x_element_non0 <- do.call(rbind, lapply(1:L_ElementsAlphabetical, function(counter) {
-    x_non0 <- which(MolVecMat[, counter] > 0)
+  x_element_non0 <- do.call(c, lapply(1:L_ElementsAlphabetical, function(x) {
+    x_non0 <- which(MolVecMat[, x] > 0)
     if (length(x_non0) > 0) {
-      counter
+      x
     }
   }))
   #
@@ -500,7 +580,7 @@ UFA_enumerated_chemical_space <- function(PARAM_MF) {
     ip_export[[x]]$ipp
   })
   ##
-  R13C_IP <- do.call(c, lapply(1:L_ip_export, function(x) {
+  IP_R13C <- do.call(c, lapply(1:L_ip_export, function(x) {
     ip_export[[x]]$r13c
   }))
   ##
@@ -512,12 +592,22 @@ UFA_enumerated_chemical_space <- function(PARAM_MF) {
     ip_export[[x]]$lip
   }))
   ##
-  ip_export <- 0
+  ip_export <- NULL
+  ##
+  IDroundMass <- cbind(round(IP_Mass, digits = 2), seq(1, L_ip_export, 1))
+  IDroundMass <- IDroundMass[order(IDroundMass[, 1], decreasing = FALSE), ]
+  xDiff <- c(0, which(abs(diff(IDroundMass[, 1])) > 0), L_ip_export)
+  LDiff <- length(xDiff) - 1
+  AggregatedList <- lapply(1:LDiff, function(i) {
+    IDroundMass[(xDiff[i] + 1):xDiff[i + 1], 2]
+  })
+  names(AggregatedList) <- IDroundMass[(xDiff[1:LDiff] + 1), 1]
+  ##
   print("Completed creating the isotopic profile database!")
   ##
   PARAM_MF$`User input 2`[x_address_IPDB] <- NA
-  IPDB <- list(IP_Mass, IP_library, IsotopicProfile, R13C_IP, Index_MAIso, IP_size, PARAM_MF)
-  names(IPDB) <- c("MassMAIso", "MolecularFormulaDB", "IsotopicProfile", "R13C", "IndexMAIso", "IPsize", "logIPDB")
+  IPDB <- list(PARAM_MF, AggregatedList, IP_Mass, IP_library, IsotopicProfile, IP_R13C, Index_MAIso, IP_size)
+  names(IPDB) <- c("logIPDB", "AggregatedList", "MassMAIso", "MolecularFormulaDB", "IsotopicProfile", "R13C", "IndexMAIso", "IPsize")
   print("Initiated saving the isotopic profile database!")
   save(IPDB, file = address_IPDB)
   #
@@ -525,4 +615,6 @@ UFA_enumerated_chemical_space <- function(PARAM_MF) {
   closeAllConnections()
   #
   print("Saved isotopic profile database (IPDB) from the enumerating chemical space approach!")
+  ##
+  return()
 }

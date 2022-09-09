@@ -12,11 +12,11 @@ UFA_profile_visualizer <- function(PARAM_SA) {
   input_path_pl <- PARAM_SA[which(PARAM_SA[, 1] == 'PARAM0013'), 2]
   file_names_peaklist1 <- dir(path = input_path_pl, pattern = ".Rdata")
   file_names_peaklist2 <- dir(path = input_path_pl, pattern = "peaklist_")
-  file_names_peaklist <- file_names_peaklist1[file_names_peaklist1%in%file_names_peaklist2]
+  file_names_peaklist <- file_names_peaklist1[file_names_peaklist1 %in% file_names_peaklist2]
   #
   file_names_peaklist_hrms1 <- gsub(".Rdata", "", file_names_peaklist)
   file_names_peaklist_hrms2 <- gsub("peaklist_", "", file_names_peaklist_hrms1)
-  file_names_peaklist_hrms <- file_name_hrms%in%file_names_peaklist_hrms2
+  file_names_peaklist_hrms <- file_name_hrms %in% file_names_peaklist_hrms2
   L_PL <- length(which(file_names_peaklist_hrms == TRUE))
   if (length(file_name_hrms) != L_PL) {
     stop("Error!!! peaklist files are not available for the entire selected HRMS files!")
@@ -24,13 +24,13 @@ UFA_profile_visualizer <- function(PARAM_SA) {
   ##
   output_path <- PARAM_SA[which(PARAM_SA[, 1] == 'PARAM0014'), 2]
   if (!dir.exists(output_path)) {
-    dir.create(output_path)
+    dir.create(output_path, recursive = TRUE)
     print("Created output directory!")
   }
   ##
   output_path_spectra <- paste0(output_path, "/UFA_spectra/")
   if (!dir.exists(output_path_spectra)) {
-    dir.create(output_path_spectra)
+    dir.create(output_path_spectra, recursive = TRUE)
     print("Created UFA_spectra directory!")
   }
   ##
@@ -62,16 +62,14 @@ UFA_profile_visualizer <- function(PARAM_SA) {
     x_el_si <- which(Elements == "Si")
     ##
     IonPW_DC <- ionization_pathway_deconvoluter(IonPathways, Elements)
-    L_PW <- length(IonPathways)
     ##
     L_MolF <- length(molecular_formula)
-    RT_target_ion <- c()
-    MoleFormVecMat <- do.call(rbind, lapply(1:L_MolF, function (i_molf) {
+    RT_target_ion <- NULL
+    MoleFormVecMat <- do.call(rbind, lapply(1:L_MolF, function(i_molf) {
       FormulaVector <- formula_vector_generator(molecular_formula[i_molf], Elements, L_Elements)
       rt1 <- RT_target[i_molf]
-      molf_deconvoluter_ipw <- do.call(rbind, lapply(1:L_PW, function (pathway) {
-        molv_ipw <- c()
-        IonPW <- IonPW_DC[[pathway]]
+      molf_deconvoluter_ipw <- do.call(rbind, lapply(IonPW_DC, function(IonPW) {
+        molv_ipw <- NULL
         Ion_coeff <- IonPW[[1]]
         Ion_adduct <- IonPW[[2]]
         MoleFormVec <- Ion_coeff*FormulaVector + Ion_adduct
@@ -126,12 +124,12 @@ UFA_profile_visualizer <- function(PARAM_SA) {
     SpectraAnalysis_call <- function (i_pl) {
       peaklist <- loadRdata(paste0(input_path_pl, "/peaklist_", file_name_hrms[i_pl], ".Rdata"))
       ##
-      outputer003 <- IPA_MSdeconvoluter(input_path_hrms, file_name_hrms[i_pl])
-      spectraList <- outputer003[[1]]
-      MS_polarity <- outputer003[[3]]
+      outputer <- IDSL.IPA::IPA_MSdeconvoluter(input_path_hrms, file_name_hrms[i_pl])
+      spectraList <- outputer[["spectraList"]]
+      MS_polarity <- outputer[["MS_polarity"]]
       ##
       mzList.m <- do.call(rbind, lapply(1:L_MoleFormVecMat, function(j) {
-        Annotation <- c()
+        Annotation <- NULL
         ##
         x_pl <-mzRTindexer(peaklist[, 8], peaklist[, 3], mz_DataBase[j], RT_target_ion[j], mass_accuracy, delta_rt)
         if (!is.null(x_pl)) {
@@ -192,13 +190,13 @@ UFA_profile_visualizer <- function(PARAM_SA) {
             colnames(exp_spectra) <- c("mz", "int")
             theo_spectra <- data.frame(IsotopicProfile)
             colnames(theo_spectra) <- c("mz", "int")
-            lablel_spectra <- data.frame(cbind(round(exp_spectra[, 1], 5), sapply(1:size_IP, function(la_i) {max(c(exp_spectra[la_i, 2], theo_spectra[la_i, 2]))+2})))
+            lablel_spectra <- data.frame(cbind(round(exp_spectra[, 1], 5), sapply(1:size_IP, function(la_i) {max(c(exp_spectra[la_i, 2], theo_spectra[la_i, 2])) + 2})))
             max_int <- 1.15*max(c(theo_spectra[, 2], exp_spectra[, 2]))
             colnames(lablel_spectra) <- c("mz", "int")
             spectra_figure <- ggplot(data=exp_spectra, aes(x=mz, y=int)) +
               geom_segment(data=theo_spectra, aes(x=mz, xend=mz, y=0, yend=int, col = "Theoretical"), size = 6) +
               geom_segment(data=exp_spectra, aes(x=mz, xend=mz, y=0, yend=int, col = "Experimental"), size = 2) +
-              scale_color_discrete(name = c()) +
+              scale_color_discrete(name = NULL) +
               xlab("m/z") + ylab("Intensity (%)") +
               scale_x_continuous(limits = c(theo_spectra[1, 1]-1, theo_spectra[size_IP, 1]+1), expand = c(0, 0)) +
               scale_y_continuous(limits = c(0, max_int), expand = c(0, 0)) +
@@ -272,7 +270,7 @@ UFA_profile_visualizer <- function(PARAM_SA) {
     ##
     if (exportedAnnotatedSpectraTable == TRUE) {
       AnnotatedSpectraTable <- data.frame(AnnotatedSpectraTable)
-      rownames(AnnotatedSpectraTable) <- c()
+      rownames(AnnotatedSpectraTable) <- NULL
       colnames(AnnotatedSpectraTable) <- c("Filename", "PeakID", "ID_IonFormula", "sizeIP", "IonFormula", "m/z theoretical", "m/z peaklist", "Mass accuracy (Da)", "RetentionTime(min)", "PeakHeight", "NEME (mDa)", "PCS (per-mille)", "R13C peaklist (%)", "R13C theoretical (%)", "NDCS @ 80%", "RCS (%) @ 80%")
       ##
       return(AnnotatedSpectraTable)

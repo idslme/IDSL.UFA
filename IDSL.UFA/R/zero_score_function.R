@@ -36,7 +36,7 @@ zero_score_function <- function(PARAM_SFT) {
   output_path <- PARAM_SFT[which(PARAM_SFT[, 1] == 'SFT0010'), 2]
   output_path_score_function_calculations <- paste0(output_path, "/score_function_calculations")
   if (!dir.exists(output_path_score_function_calculations)) {
-    dir.create(output_path_score_function_calculations)
+    dir.create(output_path_score_function_calculations, recursive = TRUE)
   }
   opendir(output_path_score_function_calculations)
   ##
@@ -85,7 +85,7 @@ zero_score_function <- function(PARAM_SFT) {
   Score_coeff <- rep(1, 5)
   ##
   Entire_final_list_unoptimized_call <- function(i) {
-    e_u <- c()
+    e_u <- NULL
     ##
     x_ss <- which(FileName == file_name_hrms[i])
     L_targeted <- length(x_ss)
@@ -106,15 +106,15 @@ zero_score_function <- function(PARAM_SFT) {
       if (L_x_ss_i > 0) {
         peaklist <- matrix(peaklist[x_ss_i, ], nrow = L_x_ss_i)
         ##
-        outputer003 <- IPA_MSdeconvoluter(input_path_hrms, file_name_hrms[i])
-        spectraList <- outputer003[[1]]
+        outputer <- IDSL.IPA::IPA_MSdeconvoluter(input_path_hrms, file_name_hrms[i])
+        spectraList <- outputer[["spectraList"]]
         ##
         FinalList <- molecular_formula_annotator(IPDB, spectraList, peaklist, mass_accuracy, maxNEME, minPCS, minNDCS, minRCS, Score_coeff, number_processing_threads = 1)
         ##
         if (length(FinalList) > 0) {
           Molf_ss <- Molf_product[x_ss[x_ss_i_j[, 2]]]
           x_fl_compounds <- do.call(rbind, lapply(1:L_x_ss_i, function(id) {
-            id_compound <- c()
+            id_compound <- NULL
             x_id <- which(FinalList[, 1] == id)
             x_compound <- which(FinalList[x_id, 3] == Molf_ss[id])
             if (length(x_compound) > 0) {
@@ -162,16 +162,16 @@ zero_score_function <- function(PARAM_SFT) {
   Molf_product <- hill_molecular_formula_printer(EL_alpha, MolVecMatList, NPT)
   MolVecMatList <- 0
   ##
-  Molf_IPDB <- hill_molecular_formula_printer(IPDB[[2]][[1]], IPDB[[2]][[2]], NPT)
+  Molf_IPDB <- hill_molecular_formula_printer(IPDB[["MolecularFormulaDB"]][["Elements"]], IPDB[["MolecularFormulaDB"]][["MolecularFormulaMatrix"]], NPT)
   x_IPDB <- which((Molf_IPDB %in% Molf_product) == TRUE)
   mzf <- rep(NA, L_Molf)
   for (k in x_IPDB) {
     x_product <- which(Molf_product == Molf_IPDB[k])
     if (length(x_product) > 0) {
-      mzf[x_product] <- IPDB[[1]][k]
+      mzf[x_product] <- IPDB[["MassMAIso"]][k]
     }
   }
-  Molf_IPDB <- c()
+  Molf_IPDB <- NULL
   ##
   x_NA <- which(is.na(mzf))
   if (length(x_NA) > 0) {
@@ -214,17 +214,17 @@ zero_score_function <- function(PARAM_SFT) {
     }
   }
   ##
-  SizeIP_IsotopicProfile_DataBase <- IPDB[[6]]
+  SizeIP_IsotopicProfile_DataBase <- IPDB[["IPsize"]]
   x_ip <- SizeIP_IsotopicProfile_DataBase[as.numeric(Entire_final_list_unoptimized[, 3])]
   ##
   Entire_final_list_unoptimized <- cbind(Entire_final_list_unoptimized[, 1:8], x_ip, Entire_final_list_unoptimized[, 9:16], CompoundID, Entire_final_list_unoptimized[, dim(Entire_final_list_unoptimized)[2]])
   Entire_final_list_unoptimized <- data.frame(Entire_final_list_unoptimized)
   colnames(Entire_final_list_unoptimized) <- c("FileName", "PeakID", "ID_IonFormula",
-                                            "IonFormula", "m/z Isotopic Profile", "m/z peaklist",
-                                            "RT(min)", "PeakHeight", "size IP", "NEME(mDa)", "PCS",
-                                            "R13C peakList", "R13C Isotopic Profile", "NDCS", "RCS(%)",
-                                            "Rank", "CandidateCount", "CompoundID", "MolFMatch")
-  rownames(Entire_final_list_unoptimized) <- c()
+                                               "IonFormula", "m/z Isotopic Profile", "m/z peaklist",
+                                               "RT(min)", "PeakHeight", "size IP", "NEME(mDa)", "PCS",
+                                               "R13C peakList", "R13C Isotopic Profile", "NDCS", "RCS(%)",
+                                               "Rank", "CandidateCount", "CompoundID", "MolFMatch")
+  rownames(Entire_final_list_unoptimized) <- NULL
   save(Entire_final_list_unoptimized, file = paste0(output_path_score_function_calculations, "/Entire_final_list_unoptimized.Rdata"))
   print("Completed producing the unoptimized list of candidate molecular formulas!")
   gc()

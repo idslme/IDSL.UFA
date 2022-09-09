@@ -4,7 +4,7 @@
 Aligned Molecular Formula Annotator
 }
 \description{
-This function detect frequent molecular formulas across multiple samples on the aligned peak table matrix.
+This function detects frequent molecular formulas across multiple samples on the aligned peak table matrix.
 }
 \usage{
 aligned_molecular_formula_annotator(PARAM)
