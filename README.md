@@ -60,6 +60,7 @@ In addition to [**positive and negative IPDBs from the PubChem molecular formula
 
 ## Molecular formula class detection
 In many instances, the molecular formula enumeration method usually results with many molecular formulas. We develoepd a module to sort these molecular formulas based on their classes to facilitate similar molecular formulas. The aligned annotated molecular formula tables are the best source to find these related molecular formulas in a study.
+
 **From manuscript:** Many compounds belong to a chemical class with a distinct sub-structure pattern such as polychlorinated biphenyl (PCBs), polybrominated diphenyl ethers (PBDEs), polycyclic aromatic hydrocarbons (PAHs), perfluoroalkyl substances (PFAS), lipids and phthalates, etc. The formula annotations generated via the enumerated chemical space (ECS) approach were processed to detect such classes within a list of formulas. The IDSL.UFA function *detect_formula_sets* was used to detect 1) constant &Delta;H/&Delta;C ratios for polymeric (&Delta;H/&Delta;C = 2) and cyclic (&Delta;H/&Delta;C = 1/2) chain progressions within polymeric and cyclic classes (Table S.2- S.4) and 2) a constant number of carbons and fixed summation of hydrogens and halogens (&Sigma;(H+Br+Cl+F+I)) representing classes similar to PCBs, PBDEs (Table S.5).
 
 	detect_formula_sets(molecular_formulas, ratio_delta_HBrClFI_C,
@@ -68,14 +69,11 @@ In many instances, the molecular formula enumeration method usually results with
 
 **molecular_formulas:** a vector of molecular formulas
 
-**ratio_delta_HBrClFI_C:** c(2, 1/2, 0).
-2 to detect structures with linear carbon chains such as PFAS, lipids, chlorinated paraffins, etc.
-1/2 to detect structures with cyclic chains such as PAHs.
-0 to detect molecular formulas with a fixed structures but changing H/Br/Cl/F/I atoms similar to PCBs, PBDEs, etc.
+**ratio_delta_HBrClFI_C:** c(**2**, **1/2**, **0**). **2** to detect structures with linear carbon chains such as PFAS, lipids, chlorinated paraffins, etc. **1/2** to detect structures with cyclic chains such as PAHs. **0** to detect molecular formulas with a fixed structures but changing H/Br/Cl/F/I atoms similar to PCBs, PBDEs, etc.
 
-**mixed.HBrClFI.allowed:** c(TRUE, FALSE). Select `FALSE` to detect halogenated-saturated compounds similar to PFOS or select `TRUE` to detect mixed halogenated compounds with hydrogen.
+**mixed.HBrClFI.allowed:** c(`TRUE`, `FALSE`). Select `FALSE` to detect halogenated-saturated compounds similar to PFOS or select `TRUE` to detect mixed halogenated compounds with hydrogen.
 
-**min_molecular_formula_class:** minimum number of molecular formulas in each class. This number should be greater than or equal to 2.
+**min_molecular_formula_class:** minimum number of molecular formulas in each class. This number should be greater than or equal to **2**.
 
 **max_number_formula_class:** maximum number of molecular formulas in each class
 
