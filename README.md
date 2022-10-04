@@ -27,6 +27,9 @@ Visit [**wiki**](https://github.com/idslme/IDSL.UFA/wiki) for the detailed docum
 
 Visit https://ufa.idsl.me/ for the detailed documentation and tutorial.
 
+## Note
+The IDSL.UFA pipeline was developed to annotate IDSL.IPA peaklists that were generated using <sup>12</sup>C/<sup>13</sup>C isotopologue pairs by the IDSL.IPA pipeline. IDSL.UFA can still annotate IDSL.IPA peaklists with non-carbon ion pairs; however, the fifth coefficient in the score function in the equation 6 in the main manuscript should be zero to eliminate conflicts of R<sup>13</sup>C values. The score coefficients can be adjusted through PARAM0021 in the [UFA parameter spreadsheet](https://raw.githubusercontent.com/idslme/IDSL.UFA/main/UFA_parameters.xlsx).
+
 ## Citation
 Fakouri Baygi, S., Banerjee S. K., Chakraborty P., Kumar, Y. Barupal, D.K. [IDSL.UFA assigns high confidence molecular formula annotations for untargeted LC/HRMS datasets in metabolomics and exposomics](https://pubs.acs.org/doi/10.1021/acs.analchem.2c00563). *Analytical Chemistry*, **2022**, *94(39)*, 13315–13322.
 
