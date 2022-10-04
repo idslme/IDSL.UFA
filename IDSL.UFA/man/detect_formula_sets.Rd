@@ -7,9 +7,9 @@ Organic Class Detection by Repeated Unit Patterns
 This function sorts a vector of molecular formulas to aggregate organic compound classes with repeated/non-repeated substructure units. This function only works for molecular formulas with following elements: c("As", "Br", "Cl", "Na", "Se", "Si", "B", "C", "F", "H", "I", "K", "N", "O", "P", "S")
 }
 \usage{
-detect_formula_sets(molecular_formulas, ratio_delta_HBrClFI_C,
-mixed.HBrClFI.allowed, min_molecular_formula_class, max_number_formula_class,
-number_processing_threads = 1)
+detect_formula_sets(molecular_formulas, ratio_delta_HBrClFI_C = 2,
+mixed.HBrClFI.allowed = FALSE, min_molecular_formula_class = 2,
+max_number_formula_class = 100, number_processing_threads = 1)
 }
 \arguments{
   \item{molecular_formulas}{

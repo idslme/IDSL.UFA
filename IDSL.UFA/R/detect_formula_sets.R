@@ -1,4 +1,5 @@
-detect_formula_sets  <- function(molecular_formulas, ratio_delta_HBrClFI_C, mixed.HBrClFI.allowed, min_molecular_formula_class, max_number_formula_class, number_processing_threads = 1) {
+detect_formula_sets  <- function(molecular_formulas, ratio_delta_HBrClFI_C = 2, mixed.HBrClFI.allowed = FALSE,
+                                 min_molecular_formula_class = 2, max_number_formula_class = 100, number_processing_threads = 1) {
   ##
   classes_formula_matrix <- NULL
   ##
@@ -101,7 +102,7 @@ detect_formula_sets  <- function(molecular_formulas, ratio_delta_HBrClFI_C, mixe
               if ((ccc[k] != ccc[j]) & (ccc[k] > 0) & (ccc[j] > 0)) {
                 an <- hbrclfi[k]
                 Cn_chain <- (an - a1)/(ccc[k] - ccc[j])
-                if((Cn_chain == ratio_delta_HBrClFI_C)) { # The golden ratio of difference hbrclfi/c
+                if ((Cn_chain == ratio_delta_HBrClFI_C)) { # The golden ratio of difference hbrclfi/c
                   K <- c(K, class_index[k])
                   ccc[k] <- 0
                   hbrclfi[k] <- 0

@@ -28,8 +28,9 @@ molecular_formula_annotator <- function(IPDB, spectraList, peaklist, mass_accura
             PEAKS <- spectraList[[RangeScan[sc]]]
             for (Iso in 1:IPsize) {
               x_Iso <- which(abs(PEAKS[, 1] - IsotopicProfile[Iso, 1]) <= mass_accuracy)
-              if (length(x_Iso) > 0) {
-                if (length(x_Iso) > 1) {
+              Lx_Iso <- length(x_Iso)
+              if (Lx_Iso > 0) {
+                if (Lx_Iso > 1) {
                   x_Iso_min <- which.min(abs(PEAKS[x_Iso, 1] - IsotopicProfile[Iso, 1]))
                   x_Iso <- x_Iso[x_Iso_min[1]]
                 }

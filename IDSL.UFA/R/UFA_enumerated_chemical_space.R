@@ -1,11 +1,26 @@
 UFA_enumerated_chemical_space <- function(PARAM_MF) {
   ##
-  print("Initiated isotopic profile database (IPDB) production through the enumerating chemical space approach!")
-  ##
-  x_address_IPDB <- which(PARAM_MF$Parameter == "IPDB output address")
   x_name_IPDB <- which(PARAM_MF$Parameter == "IPDB file name")
-  address_IPDB <- paste0(PARAM_MF$`User input 2`[x_address_IPDB], "/", PARAM_MF$`User input 2`[x_name_IPDB], ".Rdata")
-  address_IPDB <- gsub("\\", "/", address_IPDB, fixed = TRUE)
+  IPDB_file_name <- PARAM_MF$`User input 2`[x_name_IPDB]
+  x_address_IPDB <- which(PARAM_MF$Parameter == "IPDB output address")
+  output_path <- gsub("\\", "/", PARAM_MF$`User input 2`[x_address_IPDB], fixed = TRUE)
+  ##
+  ##############################################################################
+  ## To create log record for IDSL.UFA
+  initiation_time <- Sys.time()
+  timeZone <- tryCatch(Sys.timezone(), warning = function(w) {"UTC"}, error = function(e) {"UTC"})
+  .GlobalEnv$logUFA <- paste0(output_path, "/logIPDB_", IPDB_file_name, ".txt")
+  UFA_logRecorder(paste0(rep("", 100), collapse = "="))
+  UFA_logRecorder(paste0("OUTPUT:  ", output_path))
+  UFA_logRecorder(paste0(rep("", 100), collapse = "-"))
+  UFA_logRecorder("Initiated isotopic profile database (IPDB) production through the enumerating chemical space approach!")
+  UFA_logRecorder(paste0(as.character(initiation_time), " ", timeZone))
+  UFA_logRecorder("", printMessage = FALSE)
+  UFA_logRecorder("", printMessage = FALSE)
+  UFA_logRecorder(paste0(PARAM_MF$`Parameter`, "\t", PARAM_MF$`User input 1`, "\t", PARAM_MF$`User input 2`),  printMessage = FALSE)
+  UFA_logRecorder(paste0(rep("", 100), collapse = "-"))
+  ##
+  ##############################################################################
   ##
   x_peak_spacing <- which(PARAM_MF$Parameter == "Peak spacing (Da)")
   peak_spacing <- as.numeric(PARAM_MF$`User input 2`[x_peak_spacing])
@@ -29,7 +44,8 @@ UFA_enumerated_chemical_space <- function(PARAM_MF) {
     do.call(rbind, lapply((b_xyz1):(b_xyz2), function(b) { # Boron range
       do.call(rbind, lapply((br_xyz1):(br_xyz2), function(br) { # Bromine range
         do.call(rbind, lapply((cl_1):(cl_2), function(cl) { # Chlorine range
-          if (((br + cl) >= (sum_br_cl_xyz_1)) & ((br + cl) <= (sum_br_cl_xyz_2))) { # Optional condition to remove low probable compounds
+          SUMbrcl <- br + cl
+          if ((SUMbrcl >= (sum_br_cl_xyz_1)) & (SUMbrcl <= (sum_br_cl_xyz_2))) { # Optional condition to remove low probable compounds
             do.call(rbind, lapply((k_1):(k_2), function(k) { # Potassium range
               do.call(rbind, lapply((s_1):(s_2), function(s) { # Sulfur range
                 do.call(rbind, lapply((se_1):(se_2), function(se) { # Selenium range
@@ -65,7 +81,8 @@ UFA_enumerated_chemical_space <- function(PARAM_MF) {
   Ess_MolVecMat_call <- gsub("cl_1", cl_1, Ess_MolVecMat_call)
   Ess_MolVecMat_call <- gsub("cl_2", cl_2, Ess_MolVecMat_call)
   #
-  sum_br_cl_xyz_x <- which(PARAM_MF$Parameter == "Sum Br + Cl")
+  sum_Rule3_x <- grep("Rule 3", PARAM_MF$Parameter, ignore.case = TRUE)
+  sum_br_cl_xyz_x <- sum_Rule3_x[1]
   sum_br_cl_xyz_1 <- as.numeric(PARAM_MF$`User input 1`[sum_br_cl_xyz_x])
   sum_br_cl_xyz_2 <- as.numeric(PARAM_MF$`User input 2`[sum_br_cl_xyz_x])
   Ess_MolVecMat_call <- gsub("sum_br_cl_xyz_1", sum_br_cl_xyz_1, Ess_MolVecMat_call)
@@ -162,24 +179,41 @@ UFA_enumerated_chemical_space <- function(PARAM_MF) {
         do.call(rbind, lapply((as_xyz1):(as_xyz2), function(as) { # Arsenic range
           do.call(rbind, lapply((f_xyz1):(f_xyz2), function(f) { # Fluorine range
             do.call(rbind, lapply((i_xyz1):(i_xyz2), function(i) { # Iodine range
-              if (((br + cl + f + i) >= (sum_br_cl_f_i_1)) & ((br + cl + f + i) <= (sum_br_cl_f_i_2))) { # Optional condition to remove low probable compounds
-                do.call(rbind, lapply((na_1):(na_2), function(na) { # Sodium range
-                  do.call(rbind, lapply((o_1):(o_2), function(o) { # Oxygen range
-                    do.call(rbind, lapply((p_1):(p_2), function(p) { # Phosphorus range
-                      if ((COND2)) {
-                        mol_vec <- c(c, h, as, b, br, cl, f, i, k, n, na, o, p, s, se, si)
-                        if (extended_SENIOR_rule_str) {
-                          rule2 <- extended_SENIOR_rule_check(mol_vec, valence_vec, ionization_correction = ipw_n)
-                        } else {
-                          rule2 <- TRUE
+              ##
+              SUMbrclfi <- br + cl + f + i
+              if ((SUMbrclfi >= (sum_br_cl_f_i_1)) & (SUMbrclfi <= (sum_br_cl_f_i_2))) { # Optional condition to remove low probable compounds
+                ##
+                if (rule1Check) {
+                  SUMhbrclfi <- SUMbrclfi + h
+                  rule1 <- ifelse((SUMhbrclfi >= (c/2 - n - 1) & SUMhbrclfi <= (2*c + 3*n + 6)), TRUE, FALSE)
+                } else {
+                  rule1 <- TRUE
+                }
+                if (rule1) {
+                  ##
+                  do.call(rbind, lapply((na_1):(na_2), function(na) { # Sodium range
+                    do.call(rbind, lapply((o_1):(o_2), function(o) { # Oxygen range
+                      do.call(rbind, lapply((p_1):(p_2), function(p) { # Phosphorus range
+                        if ((COND2)) {
+                          ##
+                          NUM14elements <- length(which(c(c, h, as, b, br, cl, f, i, n, o, p, s, se, si) > 0)) ## Na and K were mot included in this equation
+                          if (NUM14elements <= maxNUM14elements) {
+                            ##
+                            mol_vec <- c(c, h, as, b, br, cl, f, i, k, n, na, o, p, s, se, si)
+                            if (extended_SENIOR_rule_str) {
+                              rule2 <- extended_SENIOR_rule_check(mol_vec, valence_vec, ionization_correction = ipw_n)
+                            } else {
+                              rule2 <- TRUE
+                            }
+                            if (rule2) {
+                              c(mol_vec, counter)
+                            }
+                          }
                         }
-                        if (rule2) {
-                          c(mol_vec, counter)
-                        }
-                      }
+                      }))
                     }))
                   }))
-                }))
+                }
               }
             }))
           }))
@@ -218,7 +252,7 @@ UFA_enumerated_chemical_space <- function(PARAM_MF) {
   MolVecMat_call <- gsub("i_xyz1", i_xyz1, MolVecMat_call)
   MolVecMat_call <- gsub("i_xyz2", i_xyz2, MolVecMat_call)
   #
-  sum_br_cl_f_i_x <- which(PARAM_MF$Parameter == "Sum Br + Cl + F + I")
+  sum_br_cl_f_i_x <- sum_Rule3_x[2]
   sum_br_cl_f_i_1 <- PARAM_MF$`User input 1`[sum_br_cl_f_i_x]
   sum_br_cl_f_i_2 <- PARAM_MF$`User input 2`[sum_br_cl_f_i_x]
   MolVecMat_call <- gsub("sum_br_cl_f_i_1", sum_br_cl_f_i_1, MolVecMat_call)
@@ -242,14 +276,16 @@ UFA_enumerated_chemical_space <- function(PARAM_MF) {
   MolVecMat_call <- gsub("p_1", p_1, MolVecMat_call)
   MolVecMat_call <- gsub("p_2", p_2, MolVecMat_call)
   #
-  COND2_x <- which(PARAM_MF$Parameter == "Condition2")
-  COND2 <- PARAM_MF$`User input 2`[COND2_x]
-  if (COND2 == "" | COND2 == " " | COND2 == "1" | tolower(COND2) == "t" | tolower(COND2) == "true") {
-    COND2 <- "TRUE"
+  x_rule1 <- grep("Rule 1", PARAM_MF$Parameter, ignore.case = TRUE)
+  str_rule1 <- PARAM_MF$`User input 2`[x_rule1]
+  if (str_rule1 == "1" | tolower(str_rule1) == "t" | tolower(str_rule1) == "true") {
+    rule1Check <- "TRUE"
+  } else {
+    rule1Check <- "FALSE"
   }
-  MolVecMat_call <- gsub("COND2", COND2, MolVecMat_call)
+  MolVecMat_call <- gsub("rule1Check", rule1Check, MolVecMat_call)
   #
-  ext_sen_x <- which(PARAM_MF$Parameter == "Extended SENIOR rule")
+  ext_sen_x <- grep("Extended SENIOR rule", PARAM_MF$Parameter, ignore.case = TRUE)
   ext_sen <- PARAM_MF$`User input 2`[ext_sen_x]
   if (ext_sen == "1" | tolower(ext_sen) == "t" | tolower(ext_sen) == "true") {
     extended_SENIOR_rule_str <- "TRUE"
@@ -270,6 +306,15 @@ UFA_enumerated_chemical_space <- function(PARAM_MF) {
     }
     MolVecMat_call <- gsub("ipw_n", ipw_n, MolVecMat_call)
   }
+  #
+  maxNUM14elements <- as.numeric(PARAM_MF$`User input 2`[grep("Rule 4", PARAM_MF$Parameter, ignore.case = TRUE)])
+  #
+  COND2_x <- which(PARAM_MF$Parameter == "Condition2")
+  COND2 <- PARAM_MF$`User input 2`[COND2_x]
+  if (COND2 == "" | COND2 == " " | COND2 == "1" | tolower(COND2) == "t" | tolower(COND2) == "true") {
+    COND2 <- "TRUE"
+  }
+  MolVecMat_call <- gsub("COND2", COND2, MolVecMat_call)
   ##############################################################################
   eval(parse(text = MolVecMat_call))
   ##
@@ -290,7 +335,7 @@ UFA_enumerated_chemical_space <- function(PARAM_MF) {
   EL_NoNESSE <- element_sorter(ElementList = NonEssential_Elements, ElementOrder = "same")
   NonEssential_Elements_mass_abundance <- EL_NoNESSE[["massAbundanceList"]]
   ##############################################################################
-  print("Initiated calculating isotopic profiles for essential elements!")
+  UFA_logRecorder("Initiated calculating isotopic profiles for essential elements!")
   ##
   if (number_processing_threads == 1) {
     ##
@@ -314,16 +359,16 @@ UFA_enumerated_chemical_space <- function(PARAM_MF) {
     Ess_IPDB_mat <- matrix(Ess_IPDB_mat[, -1], ncol = 4)
     Ess_IP <- Ess_IP[x_Ess_IP]
     L_Ess_MolVecMat <- length(x_Ess_IP)
-    print(paste0("Completed calculating isotopic profiles for essential elements with ", L_Ess_MolVecMat, " combinations!"))
+    UFA_logRecorder(paste0("Completed calculating isotopic profiles for essential elements with ", L_Ess_MolVecMat, " combinations!"))
     ##
-    print("Initiated enumerating molecular formulas!")
+    UFA_logRecorder("Initiated enumerating molecular formulas!")
     MolVecMat <- do.call(rbind, lapply(1:L_Ess_MolVecMat, function(counter) {
       MolVecMat_call(counter)
     }))
     MolVecMat <- matrix(MolVecMat, ncol = L_ElementsAlphabetical_1)
     L_MolVecMat <- dim(MolVecMat)[1]
     ##
-    print(paste0("Initiated calculating masses for ", L_MolVecMat, " enumerated molecular formulas!"))
+    UFA_logRecorder(paste0("Initiated calculating masses for ", L_MolVecMat, " enumerated molecular formulas!"))
     h <- MolVecMat[, 2]
     as <- MolVecMat[, 3]
     f <- MolVecMat[, 7]
@@ -353,9 +398,9 @@ UFA_enumerated_chemical_space <- function(PARAM_MF) {
       MolVecMat <- matrix(MolVecMat[x_mass, ], ncol = L_ElementsAlphabetical_1)
       L_MolVecMat <- dim(MolVecMat)[1]
     }
-    print(paste0("Completed calculating masses for ", L_NoNEss_mass, " molecular formula combinations!"))
+    UFA_logRecorder(paste0("Completed calculating masses for ", L_NoNEss_mass, " molecular formula combinations!"))
     ##
-    print("Initiated creating the isotopic profile database!")
+    UFA_logRecorder("Initiated creating the isotopic profile database!")
     x_IP <- c(0, which(abs(diff(MolVecMat[, L_ElementsAlphabetical_1])) > 0), L_MolVecMat)
     #
     L_IP_combination <- length(x_IP) - 1
@@ -389,16 +434,16 @@ UFA_enumerated_chemical_space <- function(PARAM_MF) {
       Ess_IPDB_mat <- matrix(Ess_IPDB_mat[, -1], ncol = 4)
       Ess_IP <- Ess_IP[x_Ess_IP]
       L_Ess_MolVecMat <- length(x_Ess_IP)
-      print(paste0("Completed calculating isotopic profiles for essential elements with ", L_Ess_MolVecMat, " combinations!"))
+      UFA_logRecorder(paste0("Completed calculating isotopic profiles for essential elements with ", L_Ess_MolVecMat, " combinations!"))
       ##
-      print("Initiated enumerating molecular formulas!")
+      UFA_logRecorder("Initiated enumerating molecular formulas!")
       MolVecMat <- do.call(rbind, mclapply(1:L_Ess_MolVecMat, function(counter) {
         MolVecMat_call(counter)
       }, mc.cores = number_processing_threads))
       MolVecMat <- matrix(MolVecMat, ncol = L_ElementsAlphabetical_1)
       L_MolVecMat <- dim(MolVecMat)[1]
       ##
-      print(paste0("Initiated calculating masses for ", L_MolVecMat, " enumerated molecular formulas!"))
+      UFA_logRecorder(paste0("Initiated calculating masses for ", L_MolVecMat, " enumerated molecular formulas!"))
       h <- MolVecMat[, 2]
       as <- MolVecMat[, 3]
       f <- MolVecMat[, 7]
@@ -428,9 +473,9 @@ UFA_enumerated_chemical_space <- function(PARAM_MF) {
         MolVecMat <- matrix(MolVecMat[x_mass, ], ncol = L_ElementsAlphabetical_1)
         L_MolVecMat <- dim(MolVecMat)[1]
       }
-      print(paste0("Completed calculating masses for ", L_NoNEss_mass, " molecular formula combinations!"))
+      UFA_logRecorder(paste0("Completed calculating masses for ", L_NoNEss_mass, " molecular formula combinations!"))
       ##
-      print("Initiated creating the isotopic profile database!")
+      UFA_logRecorder("Initiated creating the isotopic profile database!")
       x_IP <- c(0, which(abs(diff(MolVecMat[, L_ElementsAlphabetical_1])) > 0), L_MolVecMat)
       #
       L_IP_combination <- length(x_IP) - 1
@@ -466,16 +511,16 @@ UFA_enumerated_chemical_space <- function(PARAM_MF) {
       Ess_IPDB_mat <- matrix(Ess_IPDB_mat[, -1], ncol = 4)
       Ess_IP <- Ess_IP[x_Ess_IP]
       L_Ess_MolVecMat <- length(x_Ess_IP)
-      print(paste0("Completed calculating isotopic profiles for essential elements with ", L_Ess_MolVecMat, " combinations!"))
+      UFA_logRecorder(paste0("Completed calculating isotopic profiles for essential elements with ", L_Ess_MolVecMat, " combinations!"))
       ##
-      print("Initiated enumerating molecular formulas!")
+      UFA_logRecorder("Initiated enumerating molecular formulas!")
       MolVecMat <- foreach(counter = 1:L_Ess_MolVecMat, .combine = 'rbind', .verbose = FALSE) %dopar% {
         MolVecMat_call(counter)
       }
       MolVecMat <- matrix(MolVecMat, ncol = L_ElementsAlphabetical_1)
       L_MolVecMat <- dim(MolVecMat)[1]
       ##
-      print(paste0("Initiated calculating masses for ", L_MolVecMat, " enumerated molecular formulas!"))
+      UFA_logRecorder(paste0("Initiated calculating masses for ", L_MolVecMat, " enumerated molecular formulas!"))
       h <- MolVecMat[, 2]
       as <- MolVecMat[, 3]
       f <- MolVecMat[, 7]
@@ -505,9 +550,9 @@ UFA_enumerated_chemical_space <- function(PARAM_MF) {
         MolVecMat <- matrix(MolVecMat[x_mass, ], ncol = L_ElementsAlphabetical_1)
         L_MolVecMat <- dim(MolVecMat)[1]
       }
-      print(paste0("Completed calculating masses for ", L_NoNEss_mass, " molecular formula combinations!"))
+      UFA_logRecorder(paste0("Completed calculating masses for ", L_NoNEss_mass, " molecular formula combinations!"))
       ##
-      print("Initiated creating the isotopic profile database!")
+      UFA_logRecorder("Initiated creating the isotopic profile database!")
       x_IP <- c(0, which(diff(MolVecMat[, L_ElementsAlphabetical_1]) > 0), L_MolVecMat)
       #
       L_IP_combination <- length(x_IP) - 1
@@ -552,7 +597,7 @@ UFA_enumerated_chemical_space <- function(PARAM_MF) {
   NoNEss_mass <- 0
   ip_export <- unlist(ip_export, recursive = FALSE)
   L_ip_export <- length(ip_export)
-  print(paste0("There are ", L_ip_export, " molecular formulas in this isotopic profile database (IPDB) after applying the entire criteria!"))
+  UFA_logRecorder(paste0("There are ", L_ip_export, " molecular formulas in this isotopic profile database (IPDB) after applying the entire criteria!"))
   ##############################################################################
   gc()
   ##
@@ -569,7 +614,7 @@ UFA_enumerated_chemical_space <- function(PARAM_MF) {
   }))
   #
   IP_library <- list(Elements = ElementsAlphabetical[x_element_non0], MolVecMat[, x_element_non0])
-  MolVecMat <- 0
+  MolVecMat <- NULL
   names(IP_library) <- c("Elements", "MolecularFormulaMatrix")
   ##
   IP_Mass <- do.call(c, lapply(1:L_ip_export, function(x) {
@@ -603,18 +648,32 @@ UFA_enumerated_chemical_space <- function(PARAM_MF) {
   })
   names(AggregatedList) <- IDroundMass[(xDiff[1:LDiff] + 1), 1]
   ##
-  print("Completed creating the isotopic profile database!")
+  UFA_logRecorder("Completed generating the isotopic profile database (IPDB)!")
   ##
   PARAM_MF$`User input 2`[x_address_IPDB] <- NA
   IPDB <- list(PARAM_MF, AggregatedList, IP_Mass, IP_library, IsotopicProfile, IP_R13C, Index_MAIso, IP_size)
   names(IPDB) <- c("logIPDB", "AggregatedList", "MassMAIso", "MolecularFormulaDB", "IsotopicProfile", "R13C", "IndexMAIso", "IPsize")
-  print("Initiated saving the isotopic profile database!")
+  ##
+  UFA_logRecorder("Initiated saving the isotopic profile database!")
+  address_IPDB <- paste0(output_path, "/", IPDB_file_name, ".Rdata")
   save(IPDB, file = address_IPDB)
-  #
+  ##
+  ##############################################################################
+  ##
+  completion_time <- Sys.time()
+  UFA_logRecorder(paste0(rep("", 100), collapse = "-"))
+  required_time <- completion_time - initiation_time
+  print(required_time)
+  UFA_logRecorder(paste0(as.character(completion_time), " ", timeZone), printMessage = FALSE)
+  UFA_logRecorder("", printMessage = FALSE)
+  UFA_logRecorder("", printMessage = FALSE)
+  UFA_logRecorder("Stored isotopic profile database (IPDB) from the enumerating chemical space approach!")
+  UFA_logRecorder(paste0(rep("", 100), collapse = "="), printMessage = FALSE)
+  ##
+  ##############################################################################
+  ##
   gc()
   closeAllConnections()
   #
-  print("Saved isotopic profile database (IPDB) from the enumerating chemical space approach!")
-  ##
   return()
 }

@@ -1,8 +1,31 @@
 molecular_formulas_source_IPDB <- function(PARAM_SF) {
-  print("Initiated isotopic profile database (IPDB) production from a source of known molecular formulas!")
   ##
   x_csv_file <- which(PARAM_SF[, 1] == "FS0001")
   Molecular_formula_source_file <- gsub("\\", "/", PARAM_SF[x_csv_file, 2], fixed = TRUE)
+  x_address_IPDB <- which(PARAM_SF[, 1] == "FS0007")
+  output_path <- PARAM_SF[x_address_IPDB, 2]
+  output_path <- gsub("\\", "/", output_path, fixed = TRUE)
+  x_name_IPDB <- which(PARAM_SF[, 1] == "FS0008")
+  IPDB_file_name <- PARAM_SF[x_name_IPDB, 2]
+  ##
+  ##############################################################################
+  ## To create log record for IDSL.UFA
+  initiation_time <- Sys.time()
+  timeZone <- tryCatch(Sys.timezone(), warning = function(w) {"UTC"}, error = function(e) {"UTC"})
+  .GlobalEnv$logUFA <- paste0(output_path, "/logIPDB_", IPDB_file_name, ".txt")
+  UFA_logRecorder(paste0(rep("", 100), collapse = "="))
+  UFA_logRecorder(paste0("csv/txt:  ", Molecular_formula_source_file))
+  UFA_logRecorder(paste0("OUTPUT:  ", output_path))
+  UFA_logRecorder(paste0(rep("", 100), collapse = "-"))
+  UFA_logRecorder("Initiated isotopic profile database (IPDB) production from a source of known molecular formulas!")
+  UFA_logRecorder(paste0(as.character(initiation_time), " ", timeZone))
+  UFA_logRecorder("", printMessage = FALSE)
+  UFA_logRecorder("", printMessage = FALSE)
+  UFA_logRecorder(paste0(PARAM_SF[, 1], "\t", PARAM_SF[, 2]),  printMessage = FALSE)
+  UFA_logRecorder(paste0(rep("", 100), collapse = "-"))
+  ##
+  ##############################################################################
+  ##
   strMoleFormFileLocation <- strsplit(Molecular_formula_source_file, "[.]")[[1]]
   moleFormFileFormat <- tolower(strMoleFormFileLocation[length(strMoleFormFileLocation)])
   ##
@@ -22,10 +45,7 @@ molecular_formulas_source_IPDB <- function(PARAM_SF) {
   UFA_IP_memeory_variables <- eval(parse(text = paste0("c(", PARAM_SF[which(PARAM_SF[, 1] == "FS0004"), 2], ")")))
   IonPathways <- eval(parse(text = paste0("c(", PARAM_SF[which(PARAM_SF[, 1] == "FS0005"), 2], ")")))
   number_processing_threads <- as.numeric(PARAM_SF[which(PARAM_SF[, 1] == "FS0006"), 2])
-  x_address_IPDB <- which(PARAM_SF[, 1] == "FS0007")
-  x_name_IPDB <- which(PARAM_SF[, 1] == "FS0008")
-  address_IPDB <- paste0(PARAM_SF[x_address_IPDB, 2], "/", PARAM_SF[x_name_IPDB, 2], ".Rdata")
-  address_IPDB <- gsub("\\", "/", address_IPDB, fixed = TRUE)
+  address_IPDB <- paste0(output_path, "/", IPDB_file_name, ".Rdata")
   ##
   IPDB <- isotopic_profile_molecular_formula_feeder(molecular_formula, peak_spacing, intensity_cutoff_str, UFA_IP_memeory_variables, IonPathways, number_processing_threads)
   PARAM_SF[x_csv_file, 2] <- NA
@@ -33,13 +53,25 @@ molecular_formulas_source_IPDB <- function(PARAM_SF) {
   IPDB <- c(list(PARAM_SF), IPDB)
   names(IPDB) <- c("logIPDB", "AggregatedList", "MassMAIso", "MolecularFormulaDB", "IsotopicProfile", "R13C", "IndexMAIso", "IPsize")
   ##
-  print("Initiated saving the isotopic profile database")
+  UFA_logRecorder("Initiated saving the isotopic profile database (IPDB)!")
   save(IPDB, file = address_IPDB)
-  #
+  ##
+  ##############################################################################
+  ##
+  completion_time <- Sys.time()
+  UFA_logRecorder(paste0(rep("", 100), collapse = "-"))
+  required_time <- completion_time - initiation_time
+  print(required_time)
+  UFA_logRecorder(paste0(as.character(completion_time), " ", timeZone), printMessage = FALSE)
+  UFA_logRecorder("", printMessage = FALSE)
+  UFA_logRecorder("", printMessage = FALSE)
+  UFA_logRecorder("Stored isotopic profile database (IPDB) from the source of known molecular formulas!")
+  UFA_logRecorder(paste0(rep("", 100), collapse = "="), printMessage = FALSE)
+  ##
+  ##############################################################################
+  ##
   gc()
   closeAllConnections()
   #
-  print("Saved isotopic profile database (IPDB) from the source of known molecular formulas!")
-  ##
   return()
 }

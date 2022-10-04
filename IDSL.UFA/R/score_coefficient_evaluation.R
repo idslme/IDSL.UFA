@@ -1,9 +1,12 @@
-score_coefficient_evaluation <- function (PARAM_SFT) {
-  print("Started evaluating score coefficients optimization!!!")
+score_coefficient_evaluation <- function(PARAM_SFT) {
+  ##
+  UFA_logRecorder(paste0(rep("", 100), collapse = "-"))
+  UFA_logRecorder("Initiated evaluating score coefficients optimization!")
+  ##
   output_path <- PARAM_SFT[which(PARAM_SFT[, 1] == "SFT0010"), 2]
   output_path_score_function_calculations <- paste0(output_path, "/score_function_calculations")
-  Entire_final_list_unoptimized <- loadRdata(paste0(output_path_score_function_calculations, "/Entire_final_list_unoptimized.Rdata"))
-  GA_score <- loadRdata(paste0(output_path_score_function_calculations, "/GA_score.Rdata"))
+  Entire_final_list_unoptimized <- IDSL.IPA::loadRdata(paste0(output_path_score_function_calculations, "/Entire_final_list_unoptimized.Rdata"))
+  GA_score <- IDSL.IPA::loadRdata(paste0(output_path_score_function_calculations, "/GA_score.Rdata"))
   GA_score <- summary(GA_score)
   Score_coeff <- GA_score$solution
   Score_coeff <- Score_coeff[1, ]
@@ -43,27 +46,27 @@ score_coefficient_evaluation <- function (PARAM_SFT) {
   if (obj_function == "toprank") {
     max_rank <- as.numeric(PARAM_SFT[which(PARAM_SFT[, 1] == "SFT0019"), 2])
     x <- which(as.numeric(Entire_final_list_unoptimized$MolFMatch) == 1)
-    print(paste0("There detected totally ", length(x), " compounds for score coefficients optimization!!!"))
+    UFA_logRecorder(paste0("There detected totally ", length(x), " compounds for score coefficients optimization!!!"))
     r_unop <- length(which(as.numeric(Entire_final_list_unoptimized$Rank[x]) <= max_rank))
-    print(paste0("There met ", r_unop, " peaks the <=", max_rank, " ranking with score coefficients of 1!!!"))
+    UFA_logRecorder(paste0("There met ", r_unop, " peaks the <=", max_rank, " ranking with score coefficients of 1!!!"))
     x <- which(as.numeric(Entire_final_list_optimized$MolFMatch) == 1)
     r_op <- length(which(as.numeric(Entire_final_list_optimized$Rank[x]) <= max_rank))
-    print(paste0("There met ", r_op, " peaks the <=", max_rank, " ranking after score coefficients optimization!!!"))
+    UFA_logRecorder(paste0("There met ", r_op, " peaks the <=", max_rank, " ranking after score coefficients optimization!!!"))
     R <- round((r_unop - r_op)/(r_unop - length(x)) * 100, 2)
   }
   if (obj_function == "overalrank") {
     x <- which(as.numeric(Entire_final_list_unoptimized$MolFMatch) == 1)
     NC <- as.numeric(Entire_final_list_optimized$CandidateCount[x])
     F_min <- sum(1/NC)
-    print(paste0("The minimum value of objective function is ", round(F_min, 2), " for a perfect score coefficients optimization!!!"))
+    UFA_logRecorder(paste0("The minimum achievable value of objective function is `", round(F_min, 2), "`!"))
     r_unop <- as.numeric(Entire_final_list_unoptimized$Rank[x])
     F_unop <- sum(r_unop/NC)
-    print(paste0("The objective function was ", round(F_unop, 2), " with score coefficients of 1!!!"))
+    UFA_logRecorder(paste0("The objective function was ", round(F_unop, 2), " with score coefficients of 1!!!"))
     x <- which(as.numeric(Entire_final_list_optimized$MolFMatch) == 1)
     r_op <- as.numeric(Entire_final_list_unoptimized$Rank[x])
     F_op <- sum(r_op/NC)
-    print(paste0("The objective function became ", round(F_op, 2), " after score coefficients optimization!!!"))
+    UFA_logRecorder(paste0("The objective function became ", round(F_op, 2), " after score coefficients optimization!!!"))
     R <- round((F_unop - F_op)/(F_unop - F_min) * 100, 2)
   }
-  print(paste0("The score coefficient optimization was ", R, "% successful with respect to score coefficients of 1 !!!"))
+  UFA_logRecorder(paste0("The score coefficient optimization was ", R, "% successful with respect to score coefficients of 1 !!!"))
 }

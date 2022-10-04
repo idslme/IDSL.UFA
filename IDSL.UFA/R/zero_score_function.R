@@ -1,14 +1,16 @@
 zero_score_function <- function(PARAM_SFT) {
-  print("Loading the isotopic profiles database!")
+  ##
   address_IPDB <- PARAM_SFT[which(PARAM_SFT[, 1] == "SFT0002"), 2]
   if (!is.na(address_IPDB)) {
     if (!file.exists(address_IPDB)) {
-      stop("ERROR!!! Problem with SFT0002! The isotopic profile database file is not available!")
+      stop(UFA_logRecorder("ERROR!!! Problem with SFT0002! The isotopic profile database file is not available!"))
     }
   } else {
-    stop("ERROR!!! Problem with SFT0002! The isotopic profile database file is not available!")
+    stop(UFA_logRecorder("ERROR!!! Problem with SFT0002! The isotopic profile database file is not available!"))
   }
-  IPDB <- loadRdata(address_IPDB)
+  UFA_logRecorder(paste0(rep("", 100), collapse = "-"))
+  UFA_logRecorder(paste0("Loading the Isotopic Profiles DataBase (IPDB) from `", address_IPDB, "`!"))
+  IPDB <- IDSL.IPA::loadRdata(address_IPDB)
   NPT <- as.numeric(PARAM_SFT[which(PARAM_SFT[, 1] == "SFT0005"), 2])
   ##
   input_path_hrms <- PARAM_SFT[which(PARAM_SFT[, 1] == 'SFT0006'), 2]
@@ -30,7 +32,7 @@ zero_score_function <- function(PARAM_SFT) {
   file_names_peaklist_hrms2 <- gsub("peaklist_", "", file_names_peaklist_hrms1)
   file_names_peaklist_hrms <- file_name_hrms %in% file_names_peaklist_hrms2
   if (length(which(file_names_peaklist_hrms == TRUE)) != L_PL) {
-    stop("Error!!! peaklist files are not available for the entire selected HRMS files!")
+    stop(UFA_logRecorder("Error!!! peaklist files are not available for the entire selected HRMS files!"))
   }
   ##
   output_path <- PARAM_SFT[which(PARAM_SFT[, 1] == 'SFT0010'), 2]
@@ -40,7 +42,7 @@ zero_score_function <- function(PARAM_SFT) {
   }
   opendir(output_path_score_function_calculations)
   ##
-  print("Deconvoluting the reference spreadsheet file!")
+  UFA_logRecorder("Deconvoluting the reference spreadsheet file!")
   excelfile_address <- PARAM_SFT[which(PARAM_SFT[, 1] == "SFT0011"), 2]
   excelfile <- readxl::read_xlsx(excelfile_address)
   FileName <- excelfile$FileName
@@ -93,7 +95,7 @@ zero_score_function <- function(PARAM_SFT) {
       mz_ss <- mzf[x_ss]
       rt_ss <- RTf[x_ss]
       ##
-      peaklist <- loadRdata(paste0(input_path_pl, "/peaklist_", file_name_hrms[i], ".Rdata"))
+      peaklist <- IDSL.IPA::loadRdata(paste0(input_path_pl, "/peaklist_", file_name_hrms[i], ".Rdata"))
       x_ss_i_j <- do.call(rbind, lapply(1:L_targeted, function(j) {
         x <-mzRTindexer(peaklist[, 8], peaklist[, 3], mz_ss[j], rt_ss[j], mass_accuracy, rt_error)
         ##
@@ -176,13 +178,13 @@ zero_score_function <- function(PARAM_SFT) {
   x_NA <- which(is.na(mzf))
   if (length(x_NA) > 0) {
     NA_molf <- unique(Molf[x_NA])
-    print("WARNING!!! The following molecular formulas were not included in the isotopic profile database (IPDB):")
+    UFA_logRecorder("WARNING!!! The following molecular formulas were not included in the isotopic profile database (IPDB):")
     for (i in 1:length(NA_molf)) {
-      print(NA_molf[i])
+      UFA_logRecorder(NA_molf[i])
     }
   }
   ##
-  print("Initiated producing the unoptimized list of candidate molecular formulas!")
+  UFA_logRecorder("Initiated producing the unoptimized list of candidate molecular formulas!")
   if (osType == "Windows") {
     clust <- makeCluster(NPT)
     registerDoParallel(clust)
@@ -203,29 +205,38 @@ zero_score_function <- function(PARAM_SFT) {
   ##############################################################################
   counter_c <- 1
   L_Entire_final_list_unoptimized <- dim(Entire_final_list_unoptimized)[1]
-  CompoundID <- rep(1, L_Entire_final_list_unoptimized)
-  if (L_Entire_final_list_unoptimized > 1) {
-    for (i in 2:L_Entire_final_list_unoptimized) {
-      if ((Entire_final_list_unoptimized[(i - 1), 1] != Entire_final_list_unoptimized[i, 1]) |
-          (Entire_final_list_unoptimized[(i - 1), 2] != Entire_final_list_unoptimized[i, 2])) {
-        counter_c <- counter_c + 1
+  if (L_Entire_final_list_unoptimized > 0) {
+    ##
+    CompoundID <- rep(1, L_Entire_final_list_unoptimized)
+    if (L_Entire_final_list_unoptimized > 1) {
+      for (i in 2:L_Entire_final_list_unoptimized) {
+        if ((Entire_final_list_unoptimized[(i - 1), 1] != Entire_final_list_unoptimized[i, 1]) |
+            (Entire_final_list_unoptimized[(i - 1), 2] != Entire_final_list_unoptimized[i, 2])) {
+          counter_c <- counter_c + 1
+        }
+        CompoundID[i] <- counter_c
       }
-      CompoundID[i] <- counter_c
     }
+    ##
+    SizeIP_IsotopicProfile_DataBase <- IPDB[["IPsize"]]
+    x_ip <- SizeIP_IsotopicProfile_DataBase[as.numeric(Entire_final_list_unoptimized[, 3])]
+    ##
+    Entire_final_list_unoptimized <- cbind(Entire_final_list_unoptimized[, 1:8], x_ip, Entire_final_list_unoptimized[, 9:16], CompoundID, Entire_final_list_unoptimized[, dim(Entire_final_list_unoptimized)[2]])
+    Entire_final_list_unoptimized <- data.frame(Entire_final_list_unoptimized)
+    colnames(Entire_final_list_unoptimized) <- c("FileName", "PeakID", "ID_IonFormula",
+                                                 "IonFormula", "m/z Isotopic Profile", "m/z peaklist",
+                                                 "RT(min)", "PeakHeight", "size IP", "NEME(mDa)", "PCS",
+                                                 "R13C peakList", "R13C Isotopic Profile", "NDCS", "RCS(%)",
+                                                 "Rank", "CandidateCount", "CompoundID", "MolFMatch")
+    rownames(Entire_final_list_unoptimized) <- NULL
+    save(Entire_final_list_unoptimized, file = paste0(output_path_score_function_calculations, "/Entire_final_list_unoptimized.Rdata"))
+    UFA_logRecorder("Completed producing the unoptimized list of candidate molecular formulas!")
+    ##
+  } else {
+    stop(UFA_logRecorder("Production of the unoptimized list of candidate molecular formulas was not successful!!!"))
   }
   ##
-  SizeIP_IsotopicProfile_DataBase <- IPDB[["IPsize"]]
-  x_ip <- SizeIP_IsotopicProfile_DataBase[as.numeric(Entire_final_list_unoptimized[, 3])]
-  ##
-  Entire_final_list_unoptimized <- cbind(Entire_final_list_unoptimized[, 1:8], x_ip, Entire_final_list_unoptimized[, 9:16], CompoundID, Entire_final_list_unoptimized[, dim(Entire_final_list_unoptimized)[2]])
-  Entire_final_list_unoptimized <- data.frame(Entire_final_list_unoptimized)
-  colnames(Entire_final_list_unoptimized) <- c("FileName", "PeakID", "ID_IonFormula",
-                                               "IonFormula", "m/z Isotopic Profile", "m/z peaklist",
-                                               "RT(min)", "PeakHeight", "size IP", "NEME(mDa)", "PCS",
-                                               "R13C peakList", "R13C Isotopic Profile", "NDCS", "RCS(%)",
-                                               "Rank", "CandidateCount", "CompoundID", "MolFMatch")
-  rownames(Entire_final_list_unoptimized) <- NULL
-  save(Entire_final_list_unoptimized, file = paste0(output_path_score_function_calculations, "/Entire_final_list_unoptimized.Rdata"))
-  print("Completed producing the unoptimized list of candidate molecular formulas!")
   gc()
+  closeAllConnections()
+  ##
 }

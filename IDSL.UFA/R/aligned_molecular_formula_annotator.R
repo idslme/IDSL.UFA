@@ -1,10 +1,11 @@
 aligned_molecular_formula_annotator <- function(PARAM) {
   ##
-  print("Initiated creating the aligned molecular formula annotated table!")
-  number_processing_threads <- as.numeric(PARAM[which(PARAM[, 1] == "PARAM0009"), 2])
+  UFA_logRecorder(paste0(rep("", 100), collapse = "-"))
+  UFA_logRecorder("Initiated generating data for the aligned molecular formula annotated table!")
   ##
+  number_processing_threads <- as.numeric(PARAM[which(PARAM[, 1] == "PARAM0009"), 2])
   input_path_peakXcol <- PARAM[which(PARAM[, 1] == 'PARAM0025'), 2]
-  peakXcol <- loadRdata(input_path_peakXcol)
+  peakXcol <- IDSL.IPA::loadRdata(input_path_peakXcol)
   L_peaks <- dim(peakXcol)[1]
   L_samples2 <- dim(peakXcol)[2]
   L_samples <- L_samples2 - 2
@@ -28,18 +29,18 @@ aligned_molecular_formula_annotator <- function(PARAM) {
   ##
   MissedPL <- setdiff((1:L_samples), seqSample)
   if (length(MissedPL) > 0) {
-    print("WARNING!!! The following MolecularFormulaAnnotationTable are not avialable:")
+    UFA_logRecorder("WARNING!!! The following MolecularFormulaAnnotationTables are not avialable:")
     for (i in MissedPL) {
-      print(ColPL[i])
+      UFA_logRecorder(ColPL[i])
     }
   }
   ##
   ##############################################################################
   ##
   input_path_peak_property <- PARAM[which(PARAM[, 1] == 'PARAM0026'), 2]
-  peak_property <- loadRdata(input_path_peak_property)
+  peak_property <- IDSL.IPA::loadRdata(input_path_peak_property)
   if (dim(peak_property)[1] != L_peaks | dim(peak_property)[2] != (L_samples2)) {
-    stop("Error!!! aligned peak property and peak indexed tables are not in the same size!!!")
+    stop(UFA_logRecorder("Aligned peak property and peak indexed tables are not in the same size!"))
   }
   peak_property <- peak_property[, c(1, 2, (seqSample + 2))]
   ##
@@ -50,7 +51,7 @@ aligned_molecular_formula_annotator <- function(PARAM) {
   ##
   call_MF_Zcol <- function(i) {
     peak_table_id <- peakXcol[, (i + 2)]
-    MolecularFormulaAnnotationTable <- loadRdata(paste0(output_path_annotated_mf_tables, "/", mf_table_list[i]))
+    MolecularFormulaAnnotationTable <- IDSL.IPA::loadRdata(paste0(output_path_annotated_mf_tables, "/", mf_table_list[i]))
     matched_peak_ids <- as.numeric(MolecularFormulaAnnotationTable[, 1])
     x_peak_ids <- which(peak_table_id %in% unique(matched_peak_ids) == TRUE)
     ##
@@ -114,7 +115,7 @@ aligned_molecular_formula_annotator <- function(PARAM) {
   ##############################################################################
   if (number_processing_threads == 1) {
     ##
-    print("Initiated matching peak IDs!")
+    UFA_logRecorder("Initiated matching peak IDs!")
     progressBARboundaries <- txtProgressBar(min = 0, max = L_samples, initial = 0, style = 3)
     #
     MF_Zcol <- do.call(rbind, lapply(seqSample, function(i) {
@@ -138,9 +139,9 @@ aligned_molecular_formula_annotator <- function(PARAM) {
     xZcol[u_peakid, 1] <- c(1, (xDiff + 1))
     xZcol[u_peakid, 2] <- c(xDiff, dim(MF_Zcol)[1])
     #
-    print("Completed matching peak IDs!")
+    UFA_logRecorder("Completed matching peak IDs!")
     ##
-    print("Initiated calculating median ranks!")
+    UFA_logRecorder("Initiated calculating median ranks!")
     progressBARboundaries <- txtProgressBar(min = 0, max = L_peaks, initial = 0, style = 3)
     #
     aligned_molecular_formula <- do.call(rbind, lapply(1:L_peaks, function(i) {
@@ -150,9 +151,9 @@ aligned_molecular_formula_annotator <- function(PARAM) {
     }))
     MF_Zcol <- NULL
     close(progressBARboundaries)
-    print("Completed calculating median ranks!")
+    UFA_logRecorder("Completed calculating median ranks!")
     ##
-    print("Initiated processing the peak property table!")
+    UFA_logRecorder("Initiated processing the peak property table!")
     progressBARboundaries <- txtProgressBar(min = 0, max = L_peaks, initial = 0, style = 3)
     IPA_Xcol <- do.call(rbind, lapply(1:L_peaks, function(i) {
       setTxtProgressBar(progressBARboundaries, i)
@@ -177,7 +178,7 @@ aligned_molecular_formula_annotator <- function(PARAM) {
     ##
     if (osType == "Linux") {
       ##
-      print("Initiated matching peak IDs!")
+      UFA_logRecorder("Initiated matching peak IDs!")
       MF_Zcol <- do.call(rbind, mclapply(seqSample, function(i) {
         call_MF_Zcol(i)
       }, mc.cores = number_processing_threads))
@@ -196,16 +197,16 @@ aligned_molecular_formula_annotator <- function(PARAM) {
       xZcol[u_peakid, 1] <- c(1, (xDiff + 1))
       xZcol[u_peakid, 2] <- c(xDiff, dim(MF_Zcol)[1])
       #
-      print("Completed matching peak IDs!")
+      UFA_logRecorder("Completed matching peak IDs!")
       ##
-      print("Initiated calculating median ranks!")
+      UFA_logRecorder("Initiated calculating median ranks!")
       aligned_molecular_formula <- do.call(rbind, mclapply(1:L_peaks, function(i) {
         call_calculating_median_ranks(i)
       }, mc.cores = number_processing_threads))
       MF_Zcol <- NULL
-      print("Completed calculating median ranks!")
+      UFA_logRecorder("Completed calculating median ranks!")
       ##
-      print("Initiated processing the peak property table!")
+      UFA_logRecorder("Initiated processing the peak property table!")
       ##
       IPA_Xcol <- do.call(rbind, mclapply(1:L_peaks, function(i) {
         c(peakXcol[i, 1:2], length(which(peakXcol[i, 3:L_samples2] > 0)))
@@ -225,7 +226,7 @@ aligned_molecular_formula_annotator <- function(PARAM) {
       clust <- makeCluster(number_processing_threads)
       registerDoParallel(clust)
       ##
-      print("Initiated matching peak IDs!")
+      UFA_logRecorder("Initiated matching peak IDs!")
       MF_Zcol <- foreach(i = seqSample, .combine = 'rbind', .verbose = FALSE) %dopar% {
         call_MF_Zcol(i)
       }
@@ -244,16 +245,16 @@ aligned_molecular_formula_annotator <- function(PARAM) {
       xZcol[u_peakid, 1] <- c(1, (xDiff + 1))
       xZcol[u_peakid, 2] <- c(xDiff, dim(MF_Zcol)[1])
       #
-      print("Completed matching peak IDs!")
+      UFA_logRecorder("Completed matching peak IDs!")
       ##
-      print("Initiated calculating median ranks!")
+      UFA_logRecorder("Initiated calculating median ranks!")
       aligned_molecular_formula <- foreach(i = 1:L_peaks, .combine = 'rbind', .verbose = FALSE) %dopar% {
         call_calculating_median_ranks(i)
       }
       MF_Zcol <- NULL
-      print("Completed calculating median ranks!")
+      UFA_logRecorder("Completed calculating median ranks!")
       ##
-      print("Initiated processing the peak property table!")
+      UFA_logRecorder("Initiated processing the peak property table!")
       ##
       IPA_Xcol <- foreach(i = 1:L_peaks, .combine = 'rbind', .verbose = FALSE) %dopar% {
         c(peakXcol[i, 1:2], length(which(peakXcol[i, 3:L_samples2] > 0)))
@@ -275,20 +276,20 @@ aligned_molecular_formula_annotator <- function(PARAM) {
   ##
   ppn1 <- strsplit(input_path_peak_property, "/")[[1]]
   ppn <- ppn1[length(ppn1)]
-  peak_property_name <- gsub(".Rdata", "", ppn)
+  peak_property_name <- gsub(".Rdata$", "", ppn)
   #
   title_mat <- cbind("m/z", "RT", "IPA detection frequency", paste0(peak_property_name, " frequency"), paste0("median ", peak_property_name), title_mat)
   colnames(aligned_molecular_formula) <- title_mat
   rownames(aligned_molecular_formula) <- NULL
-  print("Completed processing of the peak property table!")
+  UFA_logRecorder("Completed processing of the peak property table!")
   output_path_aligned_table <- paste0(output_path, "/aligned_molecular_formula_table")
   if (!dir.exists(output_path_aligned_table)) {
     dir.create(output_path_aligned_table, recursive = TRUE)
   }
-  print("Initiated saving the aligned molecular formula table!")
+  UFA_logRecorder("Initiated saving the aligned molecular formula annotated table!")
   save(aligned_molecular_formula, file = paste0(output_path_aligned_table, "/aligned_molecular_formula.Rdata"))
   write.csv(aligned_molecular_formula, file = paste0(output_path_aligned_table, "/aligned_molecular_formula.csv"))
-  print("Completed saving the aligned molecular formula table!")
-  ##
-  return()
+  UFA_logRecorder("Stored annotated aligned table as `aligned_molecular_formula` in the `.Rdata` and `.csv` formats in the `aligned_molecular_formula_table` folder!")
+  UFA_logRecorder("Completed generating data for the aligned molecular formula annotated table!")
+  UFA_logRecorder(paste0(rep("", 100), collapse = "-"))
 }

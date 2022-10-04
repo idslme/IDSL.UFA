@@ -3,8 +3,7 @@ ionization_pathway_deconvoluter <- function(IonPathways, Elements) {
   IonPathways <- gsub(" ", "", IonPathways, fixed = TRUE)
   IonPathways <- gsub("*", "", IonPathways, fixed = TRUE)
   ##
-  EL <- element_sorter(ElementList = Elements)
-  EL_DC <- EL[[1]]
+  EL_DC <- element_sorter(ElementList = Elements)[["Elements"]]
   L_Elements <- length(EL_DC)
   x_alpha <- sapply(1:L_Elements, function(i) {
     which(EL_DC == Elements[i])
@@ -27,15 +26,15 @@ ionization_pathway_deconvoluter <- function(IonPathways, Elements) {
     }
     #
     molfp <- rep(0, L_Elements)
-    molfm <- rep(0, L_Elements)
-    if (length(xpm) > 1) {
-      for (j in 1:(length(xpm) - 1)) {
+    molfm <- molfp
+    L_xpm <- length(xpm)
+    if (L_xpm > 1) {
+      for (j in 1:(L_xpm - 1)) {
         if (substr(pw, xpm[j], xpm[j]) == "+") {
           molfp1 <- substr(pw, (xpm[j] + 1), (xpm[j + 1] - 1))
           molfp1_vec <- formula_vector_generator(molfp1, EL_DC, L_Elements)
           molfp <- molfp + molfp1_vec
-        }
-        if (substr(pw, xpm[j], xpm[j]) == "-") {
+        } else if (substr(pw, xpm[j], xpm[j]) == "-") {
           molfm1 <- substr(pw, (xpm[j] + 1), (xpm[j + 1] - 1))
           molfm1_vec <- formula_vector_generator(molfm1, EL_DC, L_Elements)
           molfm <- molfm + molfm1_vec

@@ -1,0 +1,19 @@
+\name{UFA_logRecorder}
+\alias{UFA_logRecorder}
+\title{
+UFA_logRecorder
+}
+\description{
+UFA_logRecorder
+}
+\usage{
+UFA_logRecorder(messageQuote, printMessage = TRUE)
+}
+\arguments{
+  \item{messageQuote}{
+messageQuote
+}
+  \item{printMessage}{
+printMessage
+}
+}

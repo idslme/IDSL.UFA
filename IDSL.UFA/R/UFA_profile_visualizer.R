@@ -1,5 +1,4 @@
 UFA_profile_visualizer <- function(PARAM_SA) {
-  print("Initiated producing mass spectra!")
   input_path_hrms <- PARAM_SA[which(PARAM_SA[, 1] == 'PARAM0010'), 2]
   if (tolower(PARAM_SA[which(PARAM_SA[, 1] == 'PARAM0011'), 2]) == "all") {
     file_name_hrms <- dir(path = input_path_hrms)
@@ -19,7 +18,7 @@ UFA_profile_visualizer <- function(PARAM_SA) {
   file_names_peaklist_hrms <- file_name_hrms %in% file_names_peaklist_hrms2
   L_PL <- length(which(file_names_peaklist_hrms == TRUE))
   if (length(file_name_hrms) != L_PL) {
-    stop("Error!!! peaklist files are not available for the entire selected HRMS files!")
+    stop(UFA_logRecorder("Error!!! peaklist files are not available for the entire selected HRMS files!"))
   }
   ##
   output_path <- PARAM_SA[which(PARAM_SA[, 1] == 'PARAM0014'), 2]
@@ -31,8 +30,10 @@ UFA_profile_visualizer <- function(PARAM_SA) {
   output_path_spectra <- paste0(output_path, "/UFA_spectra/")
   if (!dir.exists(output_path_spectra)) {
     dir.create(output_path_spectra, recursive = TRUE)
-    print("Created UFA_spectra directory!")
+    UFA_logRecorder("Created UFA_spectra directory!")
   }
+  UFA_logRecorder("UFA_spectra comparison plots with theoretical isotopic profiles are stored in the `UFA_spectra` folder!")
+  opendir(output_path_spectra)
   ##
   molecular_formula <- eval(parse(text = paste0("c(", PARAM_SA[which(PARAM_SA[, 1] == 'SA0001'), 2], ")")))
   RT_target <- eval(parse(text = paste0("c(", PARAM_SA[which(PARAM_SA[, 1] == 'SA0002'), 2], ")")))
@@ -48,8 +49,8 @@ UFA_profile_visualizer <- function(PARAM_SA) {
   if (exportSpectra == TRUE | exportedAnnotatedSpectraTable == TRUE) {
     ##
     EL <- element_sorter()
-    Elements <- EL[[1]]
-    Elements_mass_abundance <- EL[[2]]
+    Elements <- EL[["Elements"]]
+    Elements_mass_abundance <- EL[["massAbundanceList"]]
     L_Elements <- length(Elements)
     ##
     x_el_c <- which(Elements == "C")
@@ -122,7 +123,7 @@ UFA_profile_visualizer <- function(PARAM_SA) {
     }
     ##
     SpectraAnalysis_call <- function (i_pl) {
-      peaklist <- loadRdata(paste0(input_path_pl, "/peaklist_", file_name_hrms[i_pl], ".Rdata"))
+      peaklist <- IDSL.IPA::loadRdata(paste0(input_path_pl, "/peaklist_", file_name_hrms[i_pl], ".Rdata"))
       ##
       outputer <- IDSL.IPA::IPA_MSdeconvoluter(input_path_hrms, file_name_hrms[i_pl])
       spectraList <- outputer[["spectraList"]]
@@ -148,8 +149,9 @@ UFA_profile_visualizer <- function(PARAM_SA) {
             PEAKS <- spectraList[[RangeScan[sc]]]
             for (Iso in 1:size_IP) {
               x_Iso <- which(abs(PEAKS[, 1] - IsotopicProfile[Iso, 1]) <= mass_accuracy)
-              if (length(x_Iso) > 0) {
-                if (length(x_Iso) > 1) {
+              Lx_Iso <- length(x_Iso)
+              if (Lx_Iso > 0) {
+                if (Lx_Iso > 1) {
                   x_Iso_min <- which.min(abs(PEAKS[x_Iso, 1] - IsotopicProfile[Iso, 1]))
                   x_Iso <- x_Iso[x_Iso_min[1]]
                 }
@@ -265,8 +267,6 @@ UFA_profile_visualizer <- function(PARAM_SA) {
       }, mc.cores = number_processing_threads))
       closeAllConnections()
     }
-    ##
-    print("Completed producing mass spectra!")
     ##
     if (exportedAnnotatedSpectraTable == TRUE) {
       AnnotatedSpectraTable <- data.frame(AnnotatedSpectraTable)

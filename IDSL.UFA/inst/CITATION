@@ -1,0 +1,20 @@
+citHeader("To cite IDSL.UFA in publications, please use:")
+citFooter("We appreciate citing our manuscript to gain visibility in the scientific community!")
+
+citEntry("Article",
+         author = personList(as.person("Sadjad Fakouri Baygi"), as.person("Sanjay K Banerjee"),
+                         as.person("Praloy Chakraborty"), as.person("Yashwant Kumar"),
+                         as.person("Dinesh Kumar Barupal")),
+         title  = "IDSL. UFA assigns high confidence molecular formula annotations for untargeted LC/HRMS datasets in metabolomics and exposomics",
+         journal = "Analytical Chemistry",
+         year    = "2022",
+         volume = "94",
+         number  = "39",
+         pages = "13315–13322",
+         PubMedID = "36137231",
+         url      = "https://pubs.acs.org/doi/10.1021/acs.analchem.2c00563",
+         textVersion =
+         paste0("Fakouri Baygi et. al.,\n",
+               "IDSL. UFA assigns high confidence molecular formula annotations for untargeted LC/HRMS datasets in metabolomics and exposomics\n",
+               "Analytical Chemistry, 2022, 94(39), 13315–13322, doi:10.1021/acs.analchem.2c00563\n")
+        )

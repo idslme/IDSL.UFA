@@ -1,9 +1,7 @@
 isotopic_profile_calculator <- function(MoleFormVec, Elements_mass_abundance, peak_spacing, intensity_cutoff,
                                         UFA_IP_memeory_variables = c(1e30, 1e-12, 10)) {
   ##############################################################################
-  on.exit({
-    setTimeLimit(cpu = Inf, elapsed = Inf, transient = FALSE)
-  })
+  on.exit(setTimeLimit(cpu = Inf, elapsed = Inf, transient = FALSE))
   #
   setTimeLimit(elapsed = UFA_IP_memeory_variables[3], transient = TRUE)
   ##############################################################################

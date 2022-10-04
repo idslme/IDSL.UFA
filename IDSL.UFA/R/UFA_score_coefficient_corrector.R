@@ -3,8 +3,8 @@ UFA_score_coefficient_corrector <- function(input_annotated_molf_address, output
   IPDB <- IDSL.IPA::loadRdata(IPDB_address)
   size_IPDB <- IPDB[["IPsize"]]
   IPDB <- NULL
-  ann_peaklist <- dir(input_annotated_molf_address, pattern = '.Rdata')
-  file_names <- gsub(".Rdata", "", ann_peaklist)
+  ann_peaklist <- dir(input_annotated_molf_address, pattern = ".Rdata$")
+  file_names <- gsub(".Rdata$", "", ann_peaklist)
   ##
   if (!dir.exists(output_annotated_molf_address)) {
     dir.create(output_annotated_molf_address, recursive = TRUE)

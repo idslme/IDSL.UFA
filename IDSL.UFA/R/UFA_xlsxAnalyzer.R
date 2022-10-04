@@ -1,4 +1,6 @@
 UFA_xlsxAnalyzer <- function(spreadsheet) {
+  ##
+  print("Initiated testing the spreadsheet consistency!")
   checkpoint_parameter <- FALSE
   if (length(spreadsheet) >= 4) {
     if (typeof(spreadsheet) == "list") {
@@ -22,7 +24,7 @@ UFA_xlsxAnalyzer <- function(spreadsheet) {
   } else {
     print("The UFA spreadsheet was not produced properly!")
   }
-  if (checkpoint_parameter == TRUE) {
+  if (checkpoint_parameter) {
     ######################## Global parameters #################################
     x0001 <- PARAM[which(PARAM[, 1] == 'PARAM0001'), 2]
     if (length(x0001) == 0) {
@@ -518,20 +520,22 @@ UFA_xlsxAnalyzer <- function(spreadsheet) {
     }
     if (tolower(x0007) == "yes") {
       PARAM_SFT <- UFA_score_function_optimization_xlsxAnalyzer(spreadsheet)
-      if (length(PARAM_SFT) == 0) {
+      if (is.null(PARAM_SFT)) {
         checkpoint_parameter <- FALSE
       }
     }
     if (tolower(x0008) == "yes") {
       PARAM_SA <- UFA_profile_visualizer_xlsxAnalyzer(spreadsheet)
-      if (length(PARAM_SA) == 0) {
+      if (is.null(PARAM_SA)) {
         checkpoint_parameter <- FALSE
       }
     }
   }
-  if (checkpoint_parameter == FALSE) {
+  if (!checkpoint_parameter) {
     print("Please visit   https://ufa.idsl.me    for instructions!")
     PARAM <- NULL
+  } else {
+    print("The spreadsheet is consistent with the IDSL.UFA workflow!")
   }
   return(PARAM)
 }

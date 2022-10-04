@@ -38,7 +38,7 @@ hill_molecular_formula_printer <- function(Elements, MolVecMat, number_processin
   }
   ##
   if (number_processing_threads == 1) {
-    MolFormList <- do.call(rbind, lapply(1:dim(MolVecMat)[1], function(k) {
+    MolFormList <- do.call(c, lapply(1:dim(MolVecMat)[1], function(k) {
       MolFormList_call(k)
     }))
   } else {
@@ -47,7 +47,7 @@ hill_molecular_formula_printer <- function(Elements, MolVecMat, number_processin
       clust <- makeCluster(number_processing_threads)
       registerDoParallel(clust)
       ##
-      MolFormList <-  foreach(k = 1:dim(MolVecMat)[1], .combine = 'rbind', .verbose = FALSE) %dopar% {
+      MolFormList <-  foreach(k = 1:dim(MolVecMat)[1], .combine = 'c', .verbose = FALSE) %dopar% {
         MolFormList_call(k)
       }
       ##
@@ -55,7 +55,7 @@ hill_molecular_formula_printer <- function(Elements, MolVecMat, number_processin
       ##
     } else if (osType == "Linux") {
       ##
-      MolFormList <- do.call(rbind, mclapply(1:dim(MolVecMat)[1], function(k) {
+      MolFormList <- do.call(c, mclapply(1:dim(MolVecMat)[1], function(k) {
         MolFormList_call(k)
       }, mc.cores = number_processing_threads))
       ##

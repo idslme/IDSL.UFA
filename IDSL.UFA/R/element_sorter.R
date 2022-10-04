@@ -9,16 +9,16 @@ element_sorter <- function(ElementList = "all", ElementOrder = "alphabetical") {
   } else {
     Elements <- unique(ElementList)
   }
-  L_Elements <- length(Elements)
+  ##
   if (tolower(ElementOrder) == "alphabetical") {
     Elements <- sort(Elements, decreasing = FALSE)
-    X <- sapply(1:L_Elements, function(i) {nchar(Elements[i])})
+    X <- do.call(c, lapply(Elements, nchar))
     Elements <- cbind(Elements, X)
     Elements <- Elements[order(Elements[, 2], decreasing = TRUE), ]
-    OutputElements <- Elements[, 1]
-  } else if (tolower(ElementOrder) == "same") {
-    OutputElements <- Elements
+    Elements <- Elements[, 1]
   }
+  ##
+  L_Elements <- length(Elements)
   Elements_mass_abundance <- vector(mode = "list", L_Elements)
   valence <- rep(0, L_Elements)
   for (i in 1:L_Elements) {
@@ -27,9 +27,9 @@ element_sorter <- function(ElementList = "all", ElementOrder = "alphabetical") {
     valence[i] <- Valence_EL[x_el[1]]
   }
   ##
-  names(Elements_mass_abundance) <- c("Mass", "Abundance")
+  names(Elements_mass_abundance) <- Elements
   ##
-  ElementList <- list(OutputElements, Elements_mass_abundance, valence)
+  ElementList <- list(Elements, Elements_mass_abundance, valence)
   names(ElementList) <- c("Elements", "massAbundanceList", "Valence")
   return(ElementList)
 }
