@@ -23,7 +23,7 @@ To annotate your mass spectrometry data (**mzXML**, **mzML**, **netCDF**), mass 
 	library(IDSL.UFA)
 	UFA_workflow("Address of the UFA parameter spreadsheet")
 
-Visit [**wiki**](https://github.com/idslme/IDSL.UFA/wiki) for the detailed documentations and tutorials for [**Isotopic Profile DataBase (IPDB)**](https://github.com/idslme/IDSL.UFA/wiki/Isotopic-Profile-DataBase-(IPDB)), [**PubChem molecular formula database for IDSL.UFA**](https://github.com/idslme/IDSL.UFA/wiki/PubChem-molecular-formula-database-for-IDSL.UFA), [**Definition of NDCS and RCS**](https://github.com/idslme/IDSL.UFA/wiki/NDCS-RCS), and [**Molecular formula class detection**](https://github.com/idslme/IDSL.UFA/wiki/Molecular-formula-class-detection).
+Visit [**wiki**](https://github.com/idslme/IDSL.UFA/wiki) for the detailed documentations and tutorials for [**Definition of Peak Spacing and Intensity Cutoff**](https://github.com/idslme/IDSL.UFA/wiki/Peak-Spacing-and-Intensity-Cutoff), [**Isotopic Profile DataBase (IPDB)**](https://github.com/idslme/IDSL.UFA/wiki/Isotopic-Profile-DataBase-(IPDB)), [**PubChem molecular formula database for IDSL.UFA**](https://github.com/idslme/IDSL.UFA/wiki/PubChem-molecular-formula-database-for-IDSL.UFA), [**Definition of NDCS and RCS**](https://github.com/idslme/IDSL.UFA/wiki/NDCS-RCS), and [**Molecular formula class detection**](https://github.com/idslme/IDSL.UFA/wiki/Molecular-formula-class-detection).
 
 Visit https://ufa.idsl.me/ for the detailed documentation and tutorial.
 
