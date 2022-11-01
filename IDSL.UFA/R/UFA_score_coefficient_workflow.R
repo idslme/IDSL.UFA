@@ -10,17 +10,17 @@ UFA_score_coefficient_workflow <- function(spreadsheet) {
     timeZone <- tryCatch(Sys.timezone(), warning = function(w) {"UTC"}, error = function(e) {"UTC"})
     input_path <- PARAM_SFT[which(PARAM_SFT[, 1] == 'SFT0006'), 2]
     output_path <- PARAM_SFT[which(PARAM_SFT[, 1] == 'SFT0010'), 2]
-    .GlobalEnv$logUFA <- paste0(output_path, "/logUFA_score_function_optimization.txt")
-    UFA_logRecorder(paste0(rep("", 100), collapse = "="))
-    UFA_logRecorder(paste0("mzML/mzXML/netCDF:  ", input_path))
-    UFA_logRecorder(paste0("OUTPUT:  ", output_path))
-    UFA_logRecorder(paste0(rep("", 100), collapse = "-"))
-    UFA_logRecorder("Initiated score function optimization workflow!")
-    UFA_logRecorder(paste0(as.character(initiation_time), " ", timeZone))
-    UFA_logRecorder("", printMessage = FALSE)
-    UFA_logRecorder("", printMessage = FALSE)
-    UFA_logRecorder(paste0(PARAM_SFT[, 1], "\t", PARAM_SFT[, 2]),  printMessage = FALSE)
-    UFA_logRecorder(paste0(rep("", 100), collapse = "-"))
+    .GlobalEnv$logIPA <- paste0(output_path, "/logUFA_score_function_optimization.txt")
+    IPA_logRecorder(paste0(rep("", 100), collapse = "="))
+    IPA_logRecorder(paste0("mzML/mzXML/netCDF:  ", input_path))
+    IPA_logRecorder(paste0("OUTPUT:  ", output_path))
+    IPA_logRecorder(paste0(rep("", 100), collapse = "-"))
+    IPA_logRecorder("Initiated score function optimization workflow!")
+    IPA_logRecorder(paste0(as.character(initiation_time), " ", timeZone))
+    IPA_logRecorder("", printMessage = FALSE)
+    IPA_logRecorder("", printMessage = FALSE)
+    IPA_logRecorder(paste0(PARAM_SFT[, 1], "\t", PARAM_SFT[, 2]),  printMessage = FALSE)
+    IPA_logRecorder(paste0(rep("", 100), collapse = "-"))
     ##
     ##########################################################################
     ##
@@ -42,14 +42,14 @@ UFA_score_coefficient_workflow <- function(spreadsheet) {
     ##########################################################################
     ##
     completion_time <- Sys.time()
-    UFA_logRecorder(paste0(rep("", 100), collapse = "-"))
+    IPA_logRecorder(paste0(rep("", 100), collapse = "-"))
     required_time <- completion_time - initiation_time
     print(required_time)
-    UFA_logRecorder(paste0(as.character(completion_time), " ", timeZone), printMessage = FALSE)
-    UFA_logRecorder("", printMessage = FALSE)
-    UFA_logRecorder("", printMessage = FALSE)
-    UFA_logRecorder("Completed score function optimization workflow!")
-    UFA_logRecorder(paste0(rep("", 100), collapse = "="), printMessage = FALSE)
+    IPA_logRecorder(paste0(as.character(completion_time), " ", timeZone), printMessage = FALSE)
+    IPA_logRecorder("", printMessage = FALSE)
+    IPA_logRecorder("", printMessage = FALSE)
+    IPA_logRecorder("Completed score function optimization workflow!")
+    IPA_logRecorder(paste0(rep("", 100), collapse = "="), printMessage = FALSE)
     ##
     ##########################################################################
     ##

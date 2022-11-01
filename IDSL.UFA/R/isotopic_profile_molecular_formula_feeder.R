@@ -76,7 +76,7 @@ isotopic_profile_molecular_formula_feeder <- function(molecular_formula, peak_sp
     c(IPP[x_100, 1], IP_R13C, x_100, L_IPP)
   }
   ##
-  UFA_logRecorder("Initiated deconvoluting molecular formulas!")
+  IPA_logRecorder("Initiated deconvoluting molecular formulas!")
   ##
   if (number_processing_threads == 1) {
     ##
@@ -84,15 +84,15 @@ isotopic_profile_molecular_formula_feeder <- function(molecular_formula, peak_sp
       molf_deconvoluter(i)
     }))
     if (is.null(MoleFormVecMat)) {
-      stop(UFA_logRecorder("Molecular formulas are not consistent with the ionization pathways!"))
+      stop(IPA_logRecorder("Molecular formulas are not consistent with the ionization pathways!"))
     }
     MoleFormVecMat <- unique(as.matrix(MoleFormVecMat)) # To remove redundant rows
-    UFA_logRecorder("Completed deconvoluting molecular formulas!")
+    IPA_logRecorder("Completed deconvoluting molecular formulas!")
     ##
     L_MoleFormVecMat <- dim(MoleFormVecMat)[1]
-    UFA_logRecorder(paste0("There are ", L_MoleFormVecMat, " molecular formula ions for isotopic profile calculations!"))
+    IPA_logRecorder(paste0("There are ", L_MoleFormVecMat, " molecular formula ions for isotopic profile calculations!"))
     ##
-    UFA_logRecorder("Initiated calculating isotopic profiles!")
+    IPA_logRecorder("Initiated calculating isotopic profiles!")
     progressBARboundaries <- txtProgressBar(min = 0, max = L_MoleFormVecMat, initial = 0, style = 3)
     #
     IsotopicProfileList <- lapply(1:L_MoleFormVecMat, function(i) {
@@ -101,9 +101,9 @@ isotopic_profile_molecular_formula_feeder <- function(molecular_formula, peak_sp
       IP_calculator(i)
     })
     close(progressBARboundaries)
-    UFA_logRecorder("Completed calculating isotopic profiles!")
+    IPA_logRecorder("Completed calculating isotopic profiles!")
     ##
-    UFA_logRecorder("Initiated calculating the database parameters!")
+    IPA_logRecorder("Initiated calculating the database parameters!")
     ip_db_mat <- do.call(rbind, lapply(1:L_MoleFormVecMat, function(i) {
       ip_db_function(i)
     }))
@@ -118,21 +118,21 @@ isotopic_profile_molecular_formula_feeder <- function(molecular_formula, peak_sp
         molf_deconvoluter(i)
       }
       if (is.null(MoleFormVecMat)) {
-        stop(UFA_logRecorder("Molecular formulas are not consistent with the ionization pathways!"))
+        stop(IPA_logRecorder("Molecular formulas are not consistent with the ionization pathways!"))
       }
       MoleFormVecMat <- unique(as.matrix(MoleFormVecMat)) # To remove redundant rows
-      UFA_logRecorder("Completed deconvoluting molecular formulas!")
+      IPA_logRecorder("Completed deconvoluting molecular formulas!")
       ##
       L_MoleFormVecMat <- dim(MoleFormVecMat)[1]
-      UFA_logRecorder(paste0("There are ", L_MoleFormVecMat, " molecular formula ions for isotopic profile calculations!"))
+      IPA_logRecorder(paste0("There are ", L_MoleFormVecMat, " molecular formula ions for isotopic profile calculations!"))
       ##
-      UFA_logRecorder("Initiated calculating isotopic profiles!")
+      IPA_logRecorder("Initiated calculating isotopic profiles!")
       IsotopicProfileList <- foreach(i = 1:L_MoleFormVecMat, .verbose = FALSE) %dopar% {
         IP_calculator(i)
       }
-      UFA_logRecorder("Completed calculating isotopic profiles!")
+      IPA_logRecorder("Completed calculating isotopic profiles!")
       ##
-      UFA_logRecorder("Initiated calculating the database parameters!")
+      IPA_logRecorder("Initiated calculating the database parameters!")
       ip_db_mat <- foreach(i = 1:L_MoleFormVecMat, .combine = 'rbind', .verbose = FALSE) %dopar% {
         ip_db_function(i)
       }
@@ -145,21 +145,21 @@ isotopic_profile_molecular_formula_feeder <- function(molecular_formula, peak_sp
         molf_deconvoluter(i)
       }, mc.cores = number_processing_threads))
       if (is.null(MoleFormVecMat)) {
-        stop(UFA_logRecorder("Molecular formulas are not consistent with the ionization pathways!"))
+        stop(IPA_logRecorder("Molecular formulas are not consistent with the ionization pathways!"))
       }
       MoleFormVecMat <- unique(as.matrix(MoleFormVecMat)) # To remove redundant rows
-      UFA_logRecorder("Completed deconvoluting molecular formulas!")
+      IPA_logRecorder("Completed deconvoluting molecular formulas!")
       ##
       L_MoleFormVecMat <- dim(MoleFormVecMat)[1]
-      UFA_logRecorder(paste0("There are ", L_MoleFormVecMat, " molecular formula ions for isotopic profile calculations!"))
+      IPA_logRecorder(paste0("There are ", L_MoleFormVecMat, " molecular formula ions for isotopic profile calculations!"))
       ##
-      UFA_logRecorder("Initiated calculating isotopic profiles!")
+      IPA_logRecorder("Initiated calculating isotopic profiles!")
       IsotopicProfileList <- mclapply(1:L_MoleFormVecMat, function(i) {
         IP_calculator(i)
       }, mc.cores = number_processing_threads)
-      UFA_logRecorder("Completed calculating isotopic profiles!")
+      IPA_logRecorder("Completed calculating isotopic profiles!")
       ##
-      UFA_logRecorder("Initiated calculating the database parameters!")
+      IPA_logRecorder("Initiated calculating the database parameters!")
       ip_db_mat <- do.call(rbind, mclapply(1:L_MoleFormVecMat, function(i) {
         ip_db_function(i)
       }, mc.cores = number_processing_threads))
@@ -167,7 +167,7 @@ isotopic_profile_molecular_formula_feeder <- function(molecular_formula, peak_sp
       closeAllConnections()
     }
   }
-  UFA_logRecorder("Completed calculating the database parameters!")
+  IPA_logRecorder("Completed calculating the database parameters!")
   ##############################################################################
   x_element_non0 <- do.call(c, lapply(1:L_Elements, function(i) {
     x_non0 <- which(MoleFormVecMat[, i] > 0)

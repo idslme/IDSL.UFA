@@ -12,17 +12,17 @@ molecular_formulas_source_IPDB <- function(PARAM_SF) {
   ## To create log record for IDSL.UFA
   initiation_time <- Sys.time()
   timeZone <- tryCatch(Sys.timezone(), warning = function(w) {"UTC"}, error = function(e) {"UTC"})
-  .GlobalEnv$logUFA <- paste0(output_path, "/logIPDB_", IPDB_file_name, ".txt")
-  UFA_logRecorder(paste0(rep("", 100), collapse = "="))
-  UFA_logRecorder(paste0("csv/txt:  ", Molecular_formula_source_file))
-  UFA_logRecorder(paste0("OUTPUT:  ", output_path))
-  UFA_logRecorder(paste0(rep("", 100), collapse = "-"))
-  UFA_logRecorder("Initiated isotopic profile database (IPDB) production from a source of known molecular formulas!")
-  UFA_logRecorder(paste0(as.character(initiation_time), " ", timeZone))
-  UFA_logRecorder("", printMessage = FALSE)
-  UFA_logRecorder("", printMessage = FALSE)
-  UFA_logRecorder(paste0(PARAM_SF[, 1], "\t", PARAM_SF[, 2]),  printMessage = FALSE)
-  UFA_logRecorder(paste0(rep("", 100), collapse = "-"))
+  .GlobalEnv$logIPA <- paste0(output_path, "/logIPDB_", IPDB_file_name, ".txt")
+  IPA_logRecorder(paste0(rep("", 100), collapse = "="))
+  IPA_logRecorder(paste0("csv/txt:  ", Molecular_formula_source_file))
+  IPA_logRecorder(paste0("OUTPUT:  ", output_path))
+  IPA_logRecorder(paste0(rep("", 100), collapse = "-"))
+  IPA_logRecorder("Initiated isotopic profile database (IPDB) production from a source of known molecular formulas!")
+  IPA_logRecorder(paste0(as.character(initiation_time), " ", timeZone))
+  IPA_logRecorder("", printMessage = FALSE)
+  IPA_logRecorder("", printMessage = FALSE)
+  IPA_logRecorder(paste0(PARAM_SF[, 1], "\t", PARAM_SF[, 2]),  printMessage = FALSE)
+  IPA_logRecorder(paste0(rep("", 100), collapse = "-"))
   ##
   ##############################################################################
   ##
@@ -53,20 +53,20 @@ molecular_formulas_source_IPDB <- function(PARAM_SF) {
   IPDB <- c(list(PARAM_SF), IPDB)
   names(IPDB) <- c("logIPDB", "AggregatedList", "MassMAIso", "MolecularFormulaDB", "IsotopicProfile", "R13C", "IndexMAIso", "IPsize")
   ##
-  UFA_logRecorder("Initiated saving the isotopic profile database (IPDB)!")
+  IPA_logRecorder("Initiated saving the isotopic profile database (IPDB)!")
   save(IPDB, file = address_IPDB)
   ##
   ##############################################################################
   ##
   completion_time <- Sys.time()
-  UFA_logRecorder(paste0(rep("", 100), collapse = "-"))
+  IPA_logRecorder(paste0(rep("", 100), collapse = "-"))
   required_time <- completion_time - initiation_time
   print(required_time)
-  UFA_logRecorder(paste0(as.character(completion_time), " ", timeZone), printMessage = FALSE)
-  UFA_logRecorder("", printMessage = FALSE)
-  UFA_logRecorder("", printMessage = FALSE)
-  UFA_logRecorder("Stored isotopic profile database (IPDB) from the source of known molecular formulas!")
-  UFA_logRecorder(paste0(rep("", 100), collapse = "="), printMessage = FALSE)
+  IPA_logRecorder(paste0(as.character(completion_time), " ", timeZone), printMessage = FALSE)
+  IPA_logRecorder("", printMessage = FALSE)
+  IPA_logRecorder("", printMessage = FALSE)
+  IPA_logRecorder("Stored isotopic profile database (IPDB) from the source of known molecular formulas!")
+  IPA_logRecorder(paste0(rep("", 100), collapse = "="), printMessage = FALSE)
   ##
   ##############################################################################
   ##

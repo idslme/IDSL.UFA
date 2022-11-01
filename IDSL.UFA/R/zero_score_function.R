@@ -3,13 +3,13 @@ zero_score_function <- function(PARAM_SFT) {
   address_IPDB <- PARAM_SFT[which(PARAM_SFT[, 1] == "SFT0002"), 2]
   if (!is.na(address_IPDB)) {
     if (!file.exists(address_IPDB)) {
-      stop(UFA_logRecorder("ERROR!!! Problem with SFT0002! The isotopic profile database file is not available!"))
+      stop(IPA_logRecorder("ERROR!!! Problem with SFT0002! The isotopic profile database file is not available!"))
     }
   } else {
-    stop(UFA_logRecorder("ERROR!!! Problem with SFT0002! The isotopic profile database file is not available!"))
+    stop(IPA_logRecorder("ERROR!!! Problem with SFT0002! The isotopic profile database file is not available!"))
   }
-  UFA_logRecorder(paste0(rep("", 100), collapse = "-"))
-  UFA_logRecorder(paste0("Loading the Isotopic Profiles DataBase (IPDB) from `", address_IPDB, "`!"))
+  IPA_logRecorder(paste0(rep("", 100), collapse = "-"))
+  IPA_logRecorder(paste0("Loading the Isotopic Profiles DataBase (IPDB) from `", address_IPDB, "`!"))
   IPDB <- IDSL.IPA::loadRdata(address_IPDB)
   NPT <- as.numeric(PARAM_SFT[which(PARAM_SFT[, 1] == "SFT0005"), 2])
   ##
@@ -32,7 +32,7 @@ zero_score_function <- function(PARAM_SFT) {
   file_names_peaklist_hrms2 <- gsub("peaklist_", "", file_names_peaklist_hrms1)
   file_names_peaklist_hrms <- file_name_hrms %in% file_names_peaklist_hrms2
   if (length(which(file_names_peaklist_hrms == TRUE)) != L_PL) {
-    stop(UFA_logRecorder("Error!!! peaklist files are not available for the entire selected HRMS files!"))
+    stop(IPA_logRecorder("Error!!! peaklist files are not available for the entire selected HRMS files!"))
   }
   ##
   output_path <- PARAM_SFT[which(PARAM_SFT[, 1] == 'SFT0010'), 2]
@@ -42,7 +42,7 @@ zero_score_function <- function(PARAM_SFT) {
   }
   opendir(output_path_score_function_calculations)
   ##
-  UFA_logRecorder("Deconvoluting the reference spreadsheet file!")
+  IPA_logRecorder("Deconvoluting the reference spreadsheet file!")
   excelfile_address <- PARAM_SFT[which(PARAM_SFT[, 1] == "SFT0011"), 2]
   excelfile <- readxl::read_xlsx(excelfile_address)
   FileName <- excelfile$FileName
@@ -178,13 +178,13 @@ zero_score_function <- function(PARAM_SFT) {
   x_NA <- which(is.na(mzf))
   if (length(x_NA) > 0) {
     NA_molf <- unique(Molf[x_NA])
-    UFA_logRecorder("WARNING!!! The following molecular formulas were not included in the isotopic profile database (IPDB):")
+    IPA_logRecorder("WARNING!!! The following molecular formulas were not included in the isotopic profile database (IPDB):")
     for (i in 1:length(NA_molf)) {
-      UFA_logRecorder(NA_molf[i])
+      IPA_logRecorder(NA_molf[i])
     }
   }
   ##
-  UFA_logRecorder("Initiated producing the unoptimized list of candidate molecular formulas!")
+  IPA_logRecorder("Initiated producing the unoptimized list of candidate molecular formulas!")
   if (osType == "Windows") {
     clust <- makeCluster(NPT)
     registerDoParallel(clust)
@@ -230,10 +230,10 @@ zero_score_function <- function(PARAM_SFT) {
                                                  "Rank", "CandidateCount", "CompoundID", "MolFMatch")
     rownames(Entire_final_list_unoptimized) <- NULL
     save(Entire_final_list_unoptimized, file = paste0(output_path_score_function_calculations, "/Entire_final_list_unoptimized.Rdata"))
-    UFA_logRecorder("Completed producing the unoptimized list of candidate molecular formulas!")
+    IPA_logRecorder("Completed producing the unoptimized list of candidate molecular formulas!")
     ##
   } else {
-    stop(UFA_logRecorder("Production of the unoptimized list of candidate molecular formulas was not successful!!!"))
+    stop(IPA_logRecorder("Production of the unoptimized list of candidate molecular formulas was not successful!!!"))
   }
   ##
   gc()

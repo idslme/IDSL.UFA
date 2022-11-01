@@ -24,6 +24,7 @@ UFA_profile_visualizer_xlsxAnalyzer <- function (spreadsheet) {
   }
   ##############################################################################
   if (checkpoint_parameter) {
+    ##
     x0010 <- which(PARAM_SA[, 1] == "PARAM0010")
     if (length(x0010) == 0) {
       print("ERROR!!! Problem with PARAM0010!")
@@ -116,8 +117,10 @@ UFA_profile_visualizer_xlsxAnalyzer <- function (spreadsheet) {
       output_path <- gsub("\\", "/", output_path, fixed = TRUE)
       PARAM_SA[x0014, 2] <- output_path
       if (!dir.exists(output_path)) {
-        print("ERROR!!! Problem with PARAM0014! Please make sure the full path is provided!")
-        checkpoint_parameter <- FALSE
+        tryCatch(dir.create(output_path, recursive = TRUE), warning = function(w){warning("Problem with PARAM0014! R cannot create the folder!")})
+        if (!dir.exists(output_path)) {
+          checkpoint_parameter <- FALSE
+        }
       }
     }
     ############################################################################

@@ -40,7 +40,7 @@ UFA_score_coefficient_corrector <- function(input_annotated_molf_address, output
     ##
     MolecularFormulaAnnotationTable <- annotated_molf_updated
     save(MolecularFormulaAnnotationTable, file = paste0(output_annotated_molf_address, "/", file_names[i], ".Rdata"))
-    write.csv(MolecularFormulaAnnotationTable, file = paste0(output_annotated_molf_address, "/", file_names[i], ".csv"))
+    write.csv(MolecularFormulaAnnotationTable, file = paste0(output_annotated_molf_address, "/", file_names[i], ".csv"), row.names = FALSE)
     ##
     return()
   }

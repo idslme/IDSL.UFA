@@ -9,16 +9,16 @@ UFA_enumerated_chemical_space <- function(PARAM_MF) {
   ## To create log record for IDSL.UFA
   initiation_time <- Sys.time()
   timeZone <- tryCatch(Sys.timezone(), warning = function(w) {"UTC"}, error = function(e) {"UTC"})
-  .GlobalEnv$logUFA <- paste0(output_path, "/logIPDB_", IPDB_file_name, ".txt")
-  UFA_logRecorder(paste0(rep("", 100), collapse = "="))
-  UFA_logRecorder(paste0("OUTPUT:  ", output_path))
-  UFA_logRecorder(paste0(rep("", 100), collapse = "-"))
-  UFA_logRecorder("Initiated isotopic profile database (IPDB) production through the enumerating chemical space approach!")
-  UFA_logRecorder(paste0(as.character(initiation_time), " ", timeZone))
-  UFA_logRecorder("", printMessage = FALSE)
-  UFA_logRecorder("", printMessage = FALSE)
-  UFA_logRecorder(paste0(PARAM_MF$`Parameter`, "\t", PARAM_MF$`User input 1`, "\t", PARAM_MF$`User input 2`),  printMessage = FALSE)
-  UFA_logRecorder(paste0(rep("", 100), collapse = "-"))
+  .GlobalEnv$logIPA <- paste0(output_path, "/logIPDB_", IPDB_file_name, ".txt")
+  IPA_logRecorder(paste0(rep("", 100), collapse = "="))
+  IPA_logRecorder(paste0("OUTPUT:  ", output_path))
+  IPA_logRecorder(paste0(rep("", 100), collapse = "-"))
+  IPA_logRecorder("Initiated isotopic profile database (IPDB) production through the enumerating chemical space approach!")
+  IPA_logRecorder(paste0(as.character(initiation_time), " ", timeZone))
+  IPA_logRecorder("", printMessage = FALSE)
+  IPA_logRecorder("", printMessage = FALSE)
+  IPA_logRecorder(paste0(PARAM_MF$`Parameter`, "\t", PARAM_MF$`User input 1`, "\t", PARAM_MF$`User input 2`),  printMessage = FALSE)
+  IPA_logRecorder(paste0(rep("", 100), collapse = "-"))
   ##
   ##############################################################################
   ##
@@ -335,7 +335,7 @@ UFA_enumerated_chemical_space <- function(PARAM_MF) {
   EL_NoNESSE <- element_sorter(ElementList = NonEssential_Elements, ElementOrder = "same")
   NonEssential_Elements_mass_abundance <- EL_NoNESSE[["massAbundanceList"]]
   ##############################################################################
-  UFA_logRecorder("Initiated calculating isotopic profiles for essential elements!")
+  IPA_logRecorder("Initiated calculating isotopic profiles for essential elements!")
   ##
   if (number_processing_threads == 1) {
     ##
@@ -359,16 +359,16 @@ UFA_enumerated_chemical_space <- function(PARAM_MF) {
     Ess_IPDB_mat <- matrix(Ess_IPDB_mat[, -1], ncol = 4)
     Ess_IP <- Ess_IP[x_Ess_IP]
     L_Ess_MolVecMat <- length(x_Ess_IP)
-    UFA_logRecorder(paste0("Completed calculating isotopic profiles for essential elements with ", L_Ess_MolVecMat, " combinations!"))
+    IPA_logRecorder(paste0("Completed calculating isotopic profiles for essential elements with ", L_Ess_MolVecMat, " combinations!"))
     ##
-    UFA_logRecorder("Initiated enumerating molecular formulas!")
+    IPA_logRecorder("Initiated enumerating molecular formulas!")
     MolVecMat <- do.call(rbind, lapply(1:L_Ess_MolVecMat, function(counter) {
       MolVecMat_call(counter)
     }))
     MolVecMat <- matrix(MolVecMat, ncol = L_ElementsAlphabetical_1)
     L_MolVecMat <- dim(MolVecMat)[1]
     ##
-    UFA_logRecorder(paste0("Initiated calculating masses for ", L_MolVecMat, " enumerated molecular formulas!"))
+    IPA_logRecorder(paste0("Initiated calculating masses for ", L_MolVecMat, " enumerated molecular formulas!"))
     h <- MolVecMat[, 2]
     as <- MolVecMat[, 3]
     f <- MolVecMat[, 7]
@@ -398,9 +398,9 @@ UFA_enumerated_chemical_space <- function(PARAM_MF) {
       MolVecMat <- matrix(MolVecMat[x_mass, ], ncol = L_ElementsAlphabetical_1)
       L_MolVecMat <- dim(MolVecMat)[1]
     }
-    UFA_logRecorder(paste0("Completed calculating masses for ", L_NoNEss_mass, " molecular formula combinations!"))
+    IPA_logRecorder(paste0("Completed calculating masses for ", L_NoNEss_mass, " molecular formula combinations!"))
     ##
-    UFA_logRecorder("Initiated creating the isotopic profile database!")
+    IPA_logRecorder("Initiated creating the isotopic profile database!")
     x_IP <- c(0, which(abs(diff(MolVecMat[, L_ElementsAlphabetical_1])) > 0), L_MolVecMat)
     #
     L_IP_combination <- length(x_IP) - 1
@@ -434,16 +434,16 @@ UFA_enumerated_chemical_space <- function(PARAM_MF) {
       Ess_IPDB_mat <- matrix(Ess_IPDB_mat[, -1], ncol = 4)
       Ess_IP <- Ess_IP[x_Ess_IP]
       L_Ess_MolVecMat <- length(x_Ess_IP)
-      UFA_logRecorder(paste0("Completed calculating isotopic profiles for essential elements with ", L_Ess_MolVecMat, " combinations!"))
+      IPA_logRecorder(paste0("Completed calculating isotopic profiles for essential elements with ", L_Ess_MolVecMat, " combinations!"))
       ##
-      UFA_logRecorder("Initiated enumerating molecular formulas!")
+      IPA_logRecorder("Initiated enumerating molecular formulas!")
       MolVecMat <- do.call(rbind, mclapply(1:L_Ess_MolVecMat, function(counter) {
         MolVecMat_call(counter)
       }, mc.cores = number_processing_threads))
       MolVecMat <- matrix(MolVecMat, ncol = L_ElementsAlphabetical_1)
       L_MolVecMat <- dim(MolVecMat)[1]
       ##
-      UFA_logRecorder(paste0("Initiated calculating masses for ", L_MolVecMat, " enumerated molecular formulas!"))
+      IPA_logRecorder(paste0("Initiated calculating masses for ", L_MolVecMat, " enumerated molecular formulas!"))
       h <- MolVecMat[, 2]
       as <- MolVecMat[, 3]
       f <- MolVecMat[, 7]
@@ -473,9 +473,9 @@ UFA_enumerated_chemical_space <- function(PARAM_MF) {
         MolVecMat <- matrix(MolVecMat[x_mass, ], ncol = L_ElementsAlphabetical_1)
         L_MolVecMat <- dim(MolVecMat)[1]
       }
-      UFA_logRecorder(paste0("Completed calculating masses for ", L_NoNEss_mass, " molecular formula combinations!"))
+      IPA_logRecorder(paste0("Completed calculating masses for ", L_NoNEss_mass, " molecular formula combinations!"))
       ##
-      UFA_logRecorder("Initiated creating the isotopic profile database!")
+      IPA_logRecorder("Initiated creating the isotopic profile database!")
       x_IP <- c(0, which(abs(diff(MolVecMat[, L_ElementsAlphabetical_1])) > 0), L_MolVecMat)
       #
       L_IP_combination <- length(x_IP) - 1
@@ -511,16 +511,16 @@ UFA_enumerated_chemical_space <- function(PARAM_MF) {
       Ess_IPDB_mat <- matrix(Ess_IPDB_mat[, -1], ncol = 4)
       Ess_IP <- Ess_IP[x_Ess_IP]
       L_Ess_MolVecMat <- length(x_Ess_IP)
-      UFA_logRecorder(paste0("Completed calculating isotopic profiles for essential elements with ", L_Ess_MolVecMat, " combinations!"))
+      IPA_logRecorder(paste0("Completed calculating isotopic profiles for essential elements with ", L_Ess_MolVecMat, " combinations!"))
       ##
-      UFA_logRecorder("Initiated enumerating molecular formulas!")
+      IPA_logRecorder("Initiated enumerating molecular formulas!")
       MolVecMat <- foreach(counter = 1:L_Ess_MolVecMat, .combine = 'rbind', .verbose = FALSE) %dopar% {
         MolVecMat_call(counter)
       }
       MolVecMat <- matrix(MolVecMat, ncol = L_ElementsAlphabetical_1)
       L_MolVecMat <- dim(MolVecMat)[1]
       ##
-      UFA_logRecorder(paste0("Initiated calculating masses for ", L_MolVecMat, " enumerated molecular formulas!"))
+      IPA_logRecorder(paste0("Initiated calculating masses for ", L_MolVecMat, " enumerated molecular formulas!"))
       h <- MolVecMat[, 2]
       as <- MolVecMat[, 3]
       f <- MolVecMat[, 7]
@@ -550,9 +550,9 @@ UFA_enumerated_chemical_space <- function(PARAM_MF) {
         MolVecMat <- matrix(MolVecMat[x_mass, ], ncol = L_ElementsAlphabetical_1)
         L_MolVecMat <- dim(MolVecMat)[1]
       }
-      UFA_logRecorder(paste0("Completed calculating masses for ", L_NoNEss_mass, " molecular formula combinations!"))
+      IPA_logRecorder(paste0("Completed calculating masses for ", L_NoNEss_mass, " molecular formula combinations!"))
       ##
-      UFA_logRecorder("Initiated creating the isotopic profile database!")
+      IPA_logRecorder("Initiated creating the isotopic profile database!")
       x_IP <- c(0, which(diff(MolVecMat[, L_ElementsAlphabetical_1]) > 0), L_MolVecMat)
       #
       L_IP_combination <- length(x_IP) - 1
@@ -597,7 +597,7 @@ UFA_enumerated_chemical_space <- function(PARAM_MF) {
   NoNEss_mass <- 0
   ip_export <- unlist(ip_export, recursive = FALSE)
   L_ip_export <- length(ip_export)
-  UFA_logRecorder(paste0("There are ", L_ip_export, " molecular formulas in this isotopic profile database (IPDB) after applying the entire criteria!"))
+  IPA_logRecorder(paste0("There are ", L_ip_export, " molecular formulas in this isotopic profile database (IPDB) after applying the entire criteria!"))
   ##############################################################################
   gc()
   ##
@@ -648,27 +648,27 @@ UFA_enumerated_chemical_space <- function(PARAM_MF) {
   })
   names(AggregatedList) <- IDroundMass[(xDiff[1:LDiff] + 1), 1]
   ##
-  UFA_logRecorder("Completed generating the isotopic profile database (IPDB)!")
+  IPA_logRecorder("Completed generating the isotopic profile database (IPDB)!")
   ##
   PARAM_MF$`User input 2`[x_address_IPDB] <- NA
   IPDB <- list(PARAM_MF, AggregatedList, IP_Mass, IP_library, IsotopicProfile, IP_R13C, Index_MAIso, IP_size)
   names(IPDB) <- c("logIPDB", "AggregatedList", "MassMAIso", "MolecularFormulaDB", "IsotopicProfile", "R13C", "IndexMAIso", "IPsize")
   ##
-  UFA_logRecorder("Initiated saving the isotopic profile database!")
+  IPA_logRecorder("Initiated saving the isotopic profile database!")
   address_IPDB <- paste0(output_path, "/", IPDB_file_name, ".Rdata")
   save(IPDB, file = address_IPDB)
   ##
   ##############################################################################
   ##
   completion_time <- Sys.time()
-  UFA_logRecorder(paste0(rep("", 100), collapse = "-"))
+  IPA_logRecorder(paste0(rep("", 100), collapse = "-"))
   required_time <- completion_time - initiation_time
   print(required_time)
-  UFA_logRecorder(paste0(as.character(completion_time), " ", timeZone), printMessage = FALSE)
-  UFA_logRecorder("", printMessage = FALSE)
-  UFA_logRecorder("", printMessage = FALSE)
-  UFA_logRecorder("Stored isotopic profile database (IPDB) from the enumerating chemical space approach!")
-  UFA_logRecorder(paste0(rep("", 100), collapse = "="), printMessage = FALSE)
+  IPA_logRecorder(paste0(as.character(completion_time), " ", timeZone), printMessage = FALSE)
+  IPA_logRecorder("", printMessage = FALSE)
+  IPA_logRecorder("", printMessage = FALSE)
+  IPA_logRecorder("Stored isotopic profile database (IPDB) from the enumerating chemical space approach!")
+  IPA_logRecorder(paste0(rep("", 100), collapse = "="), printMessage = FALSE)
   ##
   ##############################################################################
   ##

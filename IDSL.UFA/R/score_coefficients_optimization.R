@@ -1,5 +1,5 @@
 score_coefficients_optimization <- function(PARAM_SFT) {
-  UFA_logRecorder(paste0(rep("", 100), collapse = "-"))
+  IPA_logRecorder(paste0(rep("", 100), collapse = "-"))
   ##
   number_processing_threads <- as.numeric(PARAM_SFT[which(PARAM_SFT[, 1] == "SFT0005"), 2])
   output_path <- PARAM_SFT[which(PARAM_SFT[, 1] == 'SFT0010'), 2]
@@ -29,7 +29,7 @@ score_coefficients_optimization <- function(PARAM_SFT) {
   x_true_list <- which(x_true_matchedcompound[, 2] > 0)
   L_x_true_list <- length(x_true_list)
   if (L_x_true_list > 0) {
-    UFA_logRecorder(paste0("There are totally ", L_x_true_list, " compounds matched for the score coefficients optimization!"))
+    IPA_logRecorder(paste0("There are totally ", L_x_true_list, " compounds matched for the score coefficients optimization!"))
     matchedcompounds <- x_true_matchedcompound[x_true_list, 1]
     x_true_false <- x_true_matchedcompound[, 2]
     ##
@@ -38,7 +38,7 @@ score_coefficients_optimization <- function(PARAM_SFT) {
     }))
     ##
     obj_function <- gsub(" ", "", tolower(PARAM_SFT[which(PARAM_SFT[, 1] == 'SFT0018'), 2]))
-    UFA_logRecorder(paste0("The objective function method `", obj_function, "` is used for the score coefficients optimization!"))
+    IPA_logRecorder(paste0("The objective function method `", obj_function, "` is used for the score coefficients optimization!"))
     #
     if (obj_function == "toprank") {
       max_rank <- as.numeric(PARAM_SFT[which(PARAM_SFT[, 1] == "SFT0019"), 2])
@@ -92,15 +92,15 @@ score_coefficients_optimization <- function(PARAM_SFT) {
       k <- k - 1
     }
     ##
-    UFA_logRecorder("Initiated the genetic algorithm optimization! This step may take from a minute to several hours!")
+    IPA_logRecorder("Initiated the genetic algorithm optimization! This step may take from a minute to several hours!")
     GA_score <- GA::ga(type = "real-valued", fitness = obj_ga, lower = lower_limit, upper = upper_limit, popSize = population_size, maxiter = max_iteration, parallel = number_processing_threads)
     save(GA_score, file = paste0(output_path_score_function_calculations, "/GA_score.Rdata"))
     GA_score <- summary(GA_score)
     Score_coeff <- GA_score$solution
-    write.csv(Score_coeff, file = paste0(output_path_score_function_calculations, "/score_coefficients.csv"))
-    UFA_logRecorder("Stored the genetic algorithm results in 'GA_score.Rdata'")
-    UFA_logRecorder("Stored score coefficients as `score_coefficients.csv` in the `score_function_calculations` folder!")
+    write.csv(Score_coeff, file = paste0(output_path_score_function_calculations, "/score_coefficients.csv"), row.names = FALSE)
+    IPA_logRecorder("Stored the genetic algorithm results in 'GA_score.Rdata'")
+    IPA_logRecorder("Stored score coefficients as `score_coefficients.csv` in the `score_function_calculations` folder!")
   } else {
-    stop(UFA_logRecorder("Error!!! No molecular formula in the reference list have been matched to optimize score coefficients!"))
+    stop(IPA_logRecorder("Error!!! No molecular formula in the reference list have been matched to optimize score coefficients!"))
   }
 }

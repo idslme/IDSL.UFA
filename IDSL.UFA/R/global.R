@@ -1,1 +1,1 @@
-utils::globalVariables(c("k", "i", "mz", "int", "spectra_figure", "counter", "IUPAC_Isotopes", "MolecularFormula", "logUFA"))
+utils::globalVariables(c("i", "k", "counter", "IUPAC_Isotopes", "MolecularFormula", "logIPA"))
