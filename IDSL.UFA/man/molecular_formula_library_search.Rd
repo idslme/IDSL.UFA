@@ -7,17 +7,14 @@ Molecular Formula Library Search
 This function attempts to match candidate molecular formulas against a library of molecular formulas using a set of ionization pathways.
 }
 \usage{
-molecular_formula_library_search(MolecularFormulaAnnotationTable,
-IPDB, MF_library, IonPathways, number_processing_threads = 1)
+molecular_formula_library_search(MolecularFormulaAnnotationTable, MFlibrary,
+IonPathways, number_processing_threads = 1)
 }
 \arguments{
   \item{MolecularFormulaAnnotationTable}{
 A molecular formula annotation table from the 'molecular_formula_annotator' module.
 }
-  \item{IPDB}{
-A list of isotopic profiles database for the targeted compounds.
-}
-  \item{MF_library}{
+  \item{MFlibrary}{
 A library of molecular formulas generated using the 'molecular_formula_library_generator' module.
 }
   \item{IonPathways}{

@@ -1,0 +1,19 @@
+\name{aggregatedIPdbListGenerator}
+\alias{aggregatedIPdbListGenerator}
+\title{
+aggregatedIPdbListGenerator
+}
+\description{
+aggregatedIPdbListGenerator
+}
+\usage{
+aggregatedIPdbListGenerator(MassMAIso)
+}
+\arguments{
+  \item{MassMAIso}{
+MassMAIso
+}
+}
+\value{
+AggregatedList
+}

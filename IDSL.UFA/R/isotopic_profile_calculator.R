@@ -1,27 +1,31 @@
-isotopic_profile_calculator <- function(MoleFormVec, Elements_mass_abundance, peak_spacing, intensity_cutoff,
-                                        UFA_IP_memeory_variables = c(1e30, 1e-12, 10)) {
+isotopic_profile_calculator <- function(MoleFormVec, massAbundanceList, peak_spacing, intensity_cutoff,
+                                        UFA_IP_memeory_variables = c(1e30, 1e-12, 100)) {
   ##############################################################################
   on.exit(setTimeLimit(cpu = Inf, elapsed = Inf, transient = FALSE))
-  #
-  setTimeLimit(elapsed = UFA_IP_memeory_variables[3], transient = TRUE)
+  ##
+  setTimeLimit(cpu = Inf, elapsed = UFA_IP_memeory_variables[3], transient = TRUE)
   ##############################################################################
   combination_formula <- function(n, k) {
-    factorial(n + k - 1)/factorial(n - 1)/factorial(k)
+    exp(lfactorial(n + k - 1) - lfactorial(k))/factorial(n - 1)
   }
-  Non0Elements <- which(MoleFormVec > 0)
+  ##
+  non0Elements <- which(MoleFormVec > 0)
   max_memeory_variables <- 1
-  for (i in Non0Elements) {
-    N_iso <- length(Elements_mass_abundance[[i]][[1]])
-    Rep_ncr <- combination_formula(MoleFormVec[i], N_iso)
-    max_memeory_variables <- max_memeory_variables * Rep_ncr
-    if (is.nan(max_memeory_variables) | (max_memeory_variables > UFA_IP_memeory_variables[1])) {
-      IsotopicProfile <- matrix(c(Inf, 100), ncol = 2)
-      return(IsotopicProfile)
+  for (i in non0Elements) {
+    nstableIsotopes <- massAbundanceList[[i]][[3]]
+    if (nstableIsotopes > 2) {
+      Rep_nCr <- combination_formula(nstableIsotopes, MoleFormVec[i])
+      max_memeory_variables <- max_memeory_variables * Rep_nCr
+      if (max_memeory_variables > UFA_IP_memeory_variables[1]) {
+        IsotopicProfile <- matrix(c(Inf, 100), ncol = 2)
+        return(IsotopicProfile)
+      }
     }
   }
   ##
-  nmultichoosek <- function(vec, k) {
-    n <- length(vec)
+  ##############################################################################
+  ##
+  nmultichoosek <- function(n, k) {
     if (n == 1) {
       A <- matrix(rep(k, n), ncol = k)
     } else if (n == 2) {
@@ -33,6 +37,7 @@ isotopic_profile_calculator <- function(MoleFormVec, Elements_mass_abundance, pe
       }
     } else {
       v <- 1:n
+      ##########################################################################
       ## CREDIT: This  function was derived from the `combinations` function of the `gtools` package
       combinations_repetition <- function(n, k, v) {
         if (k == 1) {
@@ -47,126 +52,181 @@ isotopic_profile_calculator <- function(MoleFormVec, Elements_mass_abundance, pe
       ##########################################################################
       A <- combinations_repetition(n, k, v)
     }
-    Am <- do.call(cbind, lapply(1:k, function(y) { vec[A[, y]]}))
-    return(Am)
+    return(A)
   }
   ##
-  SUB_ISO_PRO <- function(NumberAtoms, IsotopeMasses, IsotopeCompositions) {
-    IsotopeMasses_Combination <- nmultichoosek(IsotopeMasses, NumberAtoms)
-    L_Ai <- dim(IsotopeMasses_Combination)[1]
-    Ai <- rep(0, L_Ai)
-    for (k in 1:L_Ai) {
-      ElementCombination <- IsotopeMasses_Combination[k, ]
-      FactValue <- 1
+  ##############################################################################
+  ##
+  SUB_ISO_PRO <- function(iMassAbundanceList, numberAtoms) {
+    ##
+    isotopicCombinations <- nmultichoosek(iMassAbundanceList[[3]], numberAtoms)
+    nAk <- dim(isotopicCombinations)[1]
+    Ak <- rep(0, nAk)
+    Mk <- Ak
+    for (k in 1:nAk) {
+      lfactValue <- 0
       R <- 1
-      for (i in 1:length(IsotopeMasses)) {
-        X <- length(which(ElementCombination == IsotopeMasses[i]))
-        FactValue <- FactValue*factorial(X)
-        R <- R*(IsotopeCompositions[i]^X)
+      ##
+      stableIsotopesTable <- table(isotopicCombinations[k, ])
+      satbleIsotopeNames <- names(stableIsotopesTable)
+      ##
+      for (i in satbleIsotopeNames) {
+        X <- stableIsotopesTable[[i]]
+        ##
+        Mk[k] <- Mk[k] + X*iMassAbundanceList[[1]][[i]]
+        ##
+        lfactValue <- lfactValue + lfactorial(X) ## `lfactorial`is a base R function to calculate logarithmic factorial values for big numbers.
+        R <- R*(iMassAbundanceList[[2]][[i]]^X)
       }
-      Ai[k] <- factorial(NumberAtoms)/FactValue*R
+      Ak[k] <- R*exp(lfactorial(numberAtoms) - lfactValue)
     }
-    SumIsotopeMasses_Combination <- rowSums(IsotopeMasses_Combination)
-    X <- list(SumIsotopeMasses_Combination, Ai)
-    return(X)
+    ##
+    listMkAk <- list(Mk, Ak)
+    ##
+    return(listMkAk)
   }
+  ##
+  ##############################################################################
   ## Subfunction for element and isotopic combinations
-  SUB_COMB <- function(NumberAtoms, IsotopeMasses, IsotopeCompositions, UFA_IP_memeory_variables2) {
-    if (length(IsotopeCompositions) == 1) {
-      element_combination <- IsotopeMasses*NumberAtoms
-      RAe_element <- IsotopeCompositions
+  SUB_COMB <- function(iMassAbundanceList, numberAtoms, UFA_IP_memeory_variables2) {
+    ##
+    if (iMassAbundanceList[[3]] == 1) {
+      element_combination <- iMassAbundanceList[[1]]*numberAtoms
+      RAe_element <- iMassAbundanceList[[2]]
     } else {
-      X <- SUB_ISO_PRO(NumberAtoms, IsotopeMasses, IsotopeCompositions)
-      element_combination <- X[[1]]
-      RAe_element <- X[[2]]
-      x_c <- which(RAe_element > UFA_IP_memeory_variables2)
-      RAe_element <- RAe_element[x_c]
-      element_combination <- element_combination[x_c]
+      listMkAk <- SUB_ISO_PRO(iMassAbundanceList, numberAtoms)
+      element_combination <- listMkAk[[1]]
+      RAe_element <- listMkAk[[2]]
+      xRAe <- which(RAe_element > UFA_IP_memeory_variables2)
+      element_combination <- element_combination[xRAe]
+      RAe_element <- RAe_element[xRAe]
     }
-    Combo <- list (element_combination, RAe_element)
+    ##
+    Combo <- list(element_combination, RAe_element)
+    ##
     return(Combo)
   }
   ##
-  N_elements <- length(Non0Elements)
-  El_Mass <- vector(mode = "list", N_elements)
-  RAel_El <- El_Mass
-  Combination_Size <- 1
-  el <- 0
-  for (i in Non0Elements) {
-    IsotopeMasses <- Elements_mass_abundance[[i]][[1]]
-    IsotopeCompositions <- Elements_mass_abundance[[i]][[2]]
-    Element_Combo <- SUB_COMB(MoleFormVec[i], IsotopeMasses, IsotopeCompositions, UFA_IP_memeory_variables[2])
-    el <- el + 1
-    El_Mass[[el]] <- Element_Combo[[1]]
-    RAel_El[[el]] <- Element_Combo[[2]]
-    Combination_Size <- Combination_Size * length(El_Mass[[el]])
-  }
-  MW <- rep(0, Combination_Size)
-  RA <- rep(1, Combination_Size) # RA indicates the abundance of isotopic combinations
-  counter <- 0
+  ##############################################################################
   ##
+  nElements <- length(non0Elements)
+  massCombinations <- vector(mode = "list", nElements)
+  abundanceCombinations <- massCombinations
+  nIsotopicCombinations <- 1
+  el <- 0
+  for (i in non0Elements) {
+    elementalCombinations <- SUB_COMB(massAbundanceList[[i]], MoleFormVec[i], UFA_IP_memeory_variables[2])
+    el <- el + 1
+    massCombinations[[el]] <- elementalCombinations[[1]]
+    abundanceCombinations[[el]] <- elementalCombinations[[2]]
+    nIsotopicCombinations <- nIsotopicCombinations * length(massCombinations[[el]])
+  }
+  ##
+  ##############################################################################
+  ##
+  MZ <- rep(0, nIsotopicCombinations)
   listIndex <- 1
   sum2 <- 0
-  CounterIsotopicProfile <- 0
-  RecursiveMass <- function(El_Mass, N_elements, listIndex, sum2) {
-    if (listIndex == (N_elements + 1)) {
-      CounterIsotopicProfile <<- CounterIsotopicProfile + 1 # A global variable
-      MW[CounterIsotopicProfile] <<- sum2 # A global variable
+  counterIsotopicCombination <- 0
+  RecursiveMass <- function(massCombinations, nElements, listIndex, sum2) {
+    if (listIndex > nElements) {
+      counterIsotopicCombination <<- counterIsotopicCombination + 1       # A global variable
+      MZ[counterIsotopicCombination] <<- sum2                             # A global variable
     } else {
-      for (c in El_Mass[[listIndex]]) {
-        RecursiveMass(El_Mass, N_elements, listIndex + 1, sum2 + c)
+      for (c in massCombinations[[listIndex]]) {
+        RecursiveMass(massCombinations, nElements, listIndex + 1, sum2 + c)
       }
     }
   }
-  RecursiveMass(El_Mass, N_elements, listIndex, sum2)
-  #
-  listIndex <- 1
-  prod2 <- 1
-  CounterIsotopicProfile <- 0
-  RecursiveAbundance <- function(RAel_El, N_elements, listIndex, prod2) {
-    if (listIndex == (N_elements + 1)) {
-      CounterIsotopicProfile <<- CounterIsotopicProfile + 1 # A global variable
-      RA[CounterIsotopicProfile] <<- prod2 # A global variable
-    } else {
-      for (c in RAel_El[[listIndex]]) {
-        RecursiveAbundance(RAel_El, N_elements, listIndex + 1, prod2*c)
-      }
-    }
-  }
-  RecursiveAbundance(RAel_El, N_elements, listIndex, prod2)
+  RecursiveMass(massCombinations, nElements, listIndex, sum2)
   ##
-  B <- cbind(MW, RA)
-  L_B <- length(MW)
-  if (L_B == 1) {
-    MolWeight <- B[1]
-    RA2 <- B[2]
-  } else {
-    B <- B[which(B[, 2] > 1e-12), ]
-    B <- B[order(B[, 2], decreasing = TRUE), ]
-    if (peak_spacing != 0) {
-      MolWeight <- rep(0, L_B)
-      RA2 <- MolWeight
-      Counter <- 0
-      for (i in 1:dim(B)[1]) {
-        if (B[i, 1] != 0) {
-          x <- which(abs(B[, 1] - B[i, 1]) <= peak_spacing)
-          Counter <- Counter + 1
-          RA2[Counter] <- sum(B[x, 2])
-          MolWeight[Counter] <- sum(B[x, 1]*B[x, 2])/RA2[Counter]
-          B[x, ] <- 0
+  ##############################################################################
+  ##
+  if (nIsotopicCombinations > 1) {
+    ##
+    RA <- rep(1, nIsotopicCombinations) # RA indicates the abundance of isotopic combinations
+    listIndex <- 1
+    prod2 <- 1
+    counterIsotopicCombination <- 0
+    RecursiveAbundance <- function(abundanceCombinations, nElements, listIndex, prod2) {
+      if (listIndex > nElements) {
+        counterIsotopicCombination <<- counterIsotopicCombination + 1     # A global variable
+        RA[counterIsotopicCombination] <<- prod2                          # A global variable
+      } else {
+        for (c in abundanceCombinations[[listIndex]]) {
+          RecursiveAbundance(abundanceCombinations, nElements, listIndex + 1, prod2*c)
         }
       }
-      RA2 <- RA2[1:Counter]
-      MolWeight <- MolWeight[1:Counter]
-    } else {
-      RA2 <- B[, 2]
-      MolWeight <- B[, 1]
     }
+    RecursiveAbundance(abundanceCombinations, nElements, listIndex, prod2)
+    ##
+    ############################################################################
+    ##
+    xRAe12 <- which(RA > UFA_IP_memeory_variables[2])
+    MZ <- MZ[xRAe12]
+    RA <- RA[xRAe12]
+    nIsotopicCombinations <- length(xRAe12)
+    ##
+    orderMZ <- order(MZ, decreasing = FALSE)
+    MZ <- MZ[orderMZ]
+    RA <- RA[orderMZ]
+    if (peak_spacing > 0) {
+      B <- cbind(MZ, RA)
+      xDIffMZ <- c(0, which(diff(B[, 1]) > peak_spacing), nIsotopicCombinations)
+      LxDIffMZ <- length(xDIffMZ) - 1
+      ##
+      MZ <- rep(0, nIsotopicCombinations)
+      RA <- MZ
+      nB <- 0
+      ##
+      for (q in 1:LxDIffMZ) {
+        xQ <- seq((xDIffMZ[q] + 1), xDIffMZ[q + 1], 1)
+        ##
+        nQ <- xDIffMZ[q + 1] - xDIffMZ[q]
+        if (nQ == 1) {
+          nB <- nB + 1
+          RA[nB] <- B[xQ, 2]
+          MZ[nB] <- B[xQ, 1]
+          B[xQ, ] <- 0
+        } else {
+          xQ <- xQ[order(B[xQ, 2], decreasing = TRUE)]
+          ##
+          for (i in xQ) {
+            if (B[i, 1] != 0) {
+              x <- which(abs(B[xQ, 1] - B[i, 1]) <= peak_spacing)
+              x <- xQ[x]
+              nB <- nB + 1
+              if (length(x) == 1) {
+                RA[nB] <- B[x, 2]
+                MZ[nB] <- B[x, 1]
+              } else {
+                RA[nB] <- sum(B[x, 2])
+                MZ[nB] <- sum(B[x, 1]*B[x, 2])/RA[nB]
+              }
+              ##
+              B[x, ] <- 0
+            }
+          }
+        }
+      }
+      RA <- RA[1:nB]
+      MZ <- MZ[1:nB]
+    }
+    ##
+    Intensity <- RA/max(RA)*100 # intensity or relative abundance
+    ##
+    if (intensity_cutoff > 0) {
+      INDEX <- which(Intensity >= intensity_cutoff)
+      MZ <- MZ[INDEX]
+      Intensity <- Intensity[INDEX]
+    }
+  } else {
+    Intensity <- 100
   }
-  Intensity <- RA2/max(RA2)*100 # intensity or relative abundance
-  IsotopicProfile <- matrix(cbind(MolWeight, Intensity), ncol = 2)
-  IsotopicProfile <- matrix(IsotopicProfile[order(IsotopicProfile[, 1], decreasing = FALSE), ], ncol = 2)
-  INDEX <- which(IsotopicProfile[, 2] >= intensity_cutoff)
-  IsotopicProfile <- matrix(IsotopicProfile[INDEX, ], ncol = 2)
+  ##
+  ##############################################################################
+  ##
+  IsotopicProfile <- matrix(cbind(MZ, Intensity), ncol = 2)
+  ##
   return(IsotopicProfile)
 }

@@ -7,7 +7,8 @@ UFA Locate regex
 Locate indices of the pattern in the string
 }
 \usage{
-UFA_locate_regex(string, pattern)
+UFA_locate_regex(string, pattern, ignore.case = FALSE, perl = FALSE, fixed = FALSE,
+useBytes = FALSE)
 }
 \arguments{
   \item{string}{
@@ -16,9 +17,21 @@ a string as character
   \item{pattern}{
 a pattern to screen
 }
+  \item{ignore.case}{
+ignore.case
+}
+  \item{perl}{
+perl
+}
+  \item{fixed}{
+fixed
+}
+  \item{useBytes}{
+useBytes
+}
 }
 \details{
-This function returns `NA` when no matches are detected for the pattern.
+This function returns `NULL` when no matches are detected for the pattern.
 }
 \value{
 A 2-column matrix of location indices. The first and second columns represent start and end positions, respectively.

@@ -21,7 +21,7 @@ A vector string of the used elements
 A list of adduct calculation values for each ionization pathway.
 }
 \examples{
-Elements <- element_sorter()[["Elements"]]
+Elements <- element_sorter(alphabeticalOrder = TRUE)[["Elements"]]
 IonPathways <- c("[M]+", "[M+H]+", "[2M-Cl]-", "[3M+CO2-H2O+Na-KO2+HCl-NH4]-")
 Ion_DC <- ionization_pathway_deconvoluter(IonPathways, Elements)
 }

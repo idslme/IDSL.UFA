@@ -7,10 +7,10 @@ IPDBs from UFA Enumerated Chemical Space (ECS) approach
 This function produces the isotopic profile database using the UFA enumerated chemical space (ECS) approach.
 }
 \usage{
-UFA_enumerated_chemical_space(PARAM_MF)
+UFA_enumerated_chemical_space(PARAM_ECS)
 }
 \arguments{
-  \item{PARAM_MF}{
+  \item{PARAM_ECS}{
 A dataframe of the molecular formula constraints in the UFA spreadsheet
 }
 }

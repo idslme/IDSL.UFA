@@ -15,12 +15,12 @@ detect_formula_sets  <- function(molecular_formulas, ratio_delta_HBrClFI_C = 2, 
   MNC <- max_number_formula_class + 1
   ##############################################################################
   Elements <- c("As", "Br", "Cl", "Na", "Se", "Si", "B", "C", "F", "H", "I", "K", "N", "O", "P", "S")
-  L_Elements <- length(Elements)
+  LElements <- length(Elements)
   ##
   molecular_formulasMat_call <- function(k) {
-    mol_vec <- formula_vector_generator(molecular_formulas[k], Elements, L_Elements)
-    x_neg <- which(mol_vec < 0)
-    if (length(x_neg) > 0) {
+    mol_vec <- formula_vector_generator(molecular_formulas[k], Elements, LElements, allowedRedundantElements = TRUE)
+    xNeg <- which(mol_vec < 0)
+    if (length(xNeg) > 0) {
       mol_vec <- NULL
     }
     mol_vec
@@ -66,7 +66,7 @@ detect_formula_sets  <- function(molecular_formulas, ratio_delta_HBrClFI_C = 2, 
   colnames(molecular_formulasMat) <- Elements
   ##
   Backbone_Elements <- c("C", "H", "Br", "Cl", "F", "I")
-  MolFormMat1 <- do.call(cbind, lapply(1:L_Elements, function(k) {
+  MolFormMat1 <- do.call(cbind, lapply(1:LElements, function(k) {
     i_el <- molecular_formulasMat[, k]
     x_el <- which(Backbone_Elements == Elements[k])
     if (length(x_el) > 0) {

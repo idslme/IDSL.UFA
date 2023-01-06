@@ -7,10 +7,10 @@ IPDBs from UFA Enumerated Chemical Space (ECS) xlsx Analyzer
 This function evaluates the molecular formula generation constraints in the spreadsheet to create the isotopic profile database.
 }
 \usage{
-UFA_enumerated_chemical_space_xlsxAnalyzer(PARAM_MF)
+UFA_enumerated_chemical_space_xlsxAnalyzer(spreadsheet)
 }
 \arguments{
-  \item{PARAM_MF}{
-A dataframe of the molecular formula constraints in the UFA spreadsheet
+  \item{spreadsheet}{
+UFA spreadsheet
 }
 }

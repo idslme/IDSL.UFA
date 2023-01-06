@@ -1,5 +1,5 @@
-\name{extended_SENIOR_rule_check}
-\alias{extended_SENIOR_rule_check}
+\name{extendedSENIORrule}
+\alias{extendedSENIORrule}
 \title{
 extended SENIOR rule check
 }
@@ -7,7 +7,7 @@ extended SENIOR rule check
 This function checks whether a molecular formula follows the extended SENIOR rule.
 }
 \usage{
-extended_SENIOR_rule_check(mol_vec, valence_vec, ionization_correction = 0)
+extendedSENIORrule(mol_vec, valence_vec, ionization_correction = 0)
 }
 \arguments{
   \item{mol_vec}{

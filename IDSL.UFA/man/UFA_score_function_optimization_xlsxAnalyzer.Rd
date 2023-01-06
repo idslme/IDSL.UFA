@@ -14,3 +14,6 @@ UFA_score_function_optimization_xlsxAnalyzer(spreadsheet)
 The parameter spreadsheet in the .xlsx format.
 }
 }
+\value{
+a processed parameter to feed the `UFA_score_function_optimization` function.
+}
