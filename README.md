@@ -18,7 +18,7 @@
 ## Table of Contents
 
 - [Background](https://github.com/idslme/IDSL.UFA#background)
-- [Features of IDSL.UFA](https://github.com/idslme/IDSL.UFA#features-of-idsl.ufa)
+- [Features of IDSL.UFA](https://github.com/idslme/IDSL.UFA#features-of-idslufa)
 - [Installation](https://github.com/idslme/IDSL.UFA#installation)
 - [Workflow](https://github.com/idslme/IDSL.UFA#workflow)
 - [Quick Batch Example](https://github.com/idslme/IDSL.UFA#quick-batch-example)
@@ -27,6 +27,7 @@
 - [Citation](https://github.com/idslme/IDSL.UFA#citation)
 
 ## Background
+
 A chemical compound's molecular formula represents its elemental composition, and is a fundamental property. Assigning molecular formulas to peaks in data generated using untargeted LC/HRMS can help in gaining biological insights from metabolomics and exposomics datasets. It can complement the peak annotation pipelines that need MS2 spectra to assign a structural identity to a peak. Formulas can be assigned using only MS1 spectral data which is available for every sample analyzed using a LC/HRMS instrument in a metabolomics or exposomics study.  
 
 Because of the naturally occuring isotope atoms for each element, MS1 spectral data have more than one mass to charge ratio (m/z) values observed for an ionized species. The isotopic pattern for a chemical structure can be accurately predicted using a set of combinatorial rules that uses atomic mass tables provided by the [International Union of Pure and Applied Chemistry (IUPAC)](https://www.isotopesmatter.com).  To assign a molecular formula, the theoretical isotopic profile of carbon-containing compounds can be queried against the MS1 spectral data using a set of matching criteria and scoring system. Because of the universality of molecular formula assignment, almost all commercial and academic software to process untargeted LC/HRMS datasets have a feature to search a single or list of molecular formulas against the raw MS1 data. Community guidelines for peak annotation also recommend performing the molecular formula assignment step on untargeted LC/HRMS datasets. 
@@ -47,12 +48,14 @@ While existing solutions offer a straightforward solution to match theoretical i
 	install.packages("IDSL.UFA")
 
 ## Workflow
+
 To annotate your mass spectrometry data (**mzXML**, **mzML**, **netCDF**), mass spectrometry data should be processed using the [IDSL.IPA](https://github.com/idslme/IDSL.IPA) workflow to acquire chromatographic information of the peaks (***m/z-RT***). When the chromatographic information of individual and aggregated aligned peaklists were generated using the [IDSL.IPA](https://github.com/idslme/IDSL.IPA) workflow, download the [UFA parameter spreadsheet](https://raw.githubusercontent.com/idslme/IDSL.UFA/main/UFA_parameters.xlsx) and select the parameters accordingly and then use this spreadsheet as the input for the IDSL.UFA workflow:
 
 	library(IDSL.UFA)
 	UFA_workflow("Address of the UFA parameter spreadsheet")
 
 ## Quick Batch Example
+
 Follow these steps for a quick case study (n=33) [ST002263](https://www.metabolomicsworkbench.org/data/DRCCMetadata.php?Mode=Study&StudyID=ST002263&DataMode=AllData&ResultType=1) which has Thermo Q Exactive HF hybrid Orbitrap data collected in the HILIC-ESI-POS/NEG modes. 
 
 1. Process raw mass spectrometry data and chromatographic information using the method described by [IDSL.IPA](https://github.com/idslme/IDSL.IPA#quick-batch-example) 
@@ -80,8 +83,9 @@ Follow these steps for a quick case study (n=33) [ST002263](https://www.metabolo
 5. You may parse the results at the address you provided for **PARAM0014**.
 
 ## [**Wiki**](https://github.com/idslme/IDSL.UFA/wiki)
-1. [**a population size study with 499 indivdual mass spectrometry file**](https://github.com/idslme/IDSL.UFA/wiki/IDSL.UFA-for-MTBLS1684-study)
-2. [**list of consistent labeled isotopes**](https://github.com/idslme/IDSL.UFA/wiki/Consistent-Labeled-Isotopes)
+
+1. [**A population size study with 499 indivdual mass spectrometry file**](https://github.com/idslme/IDSL.UFA/wiki/IDSL.UFA-for-MTBLS1684-study)
+2. [**List of consistent labeled isotopes**](https://github.com/idslme/IDSL.UFA/wiki/Consistent-Labeled-Isotopes)
 3. [**Standard Adduct Type**](https://github.com/idslme/IDSL.UFA/wiki/Standard-Adduct-Type)
 4. [**Definitions of Peak Spacing and Intensity Cutoff**](https://github.com/idslme/IDSL.UFA/wiki/Peak-Spacing-and-Intensity-Cutoff)
 5. [**Isotopic Profile DataBase (IPDB)**](https://github.com/idslme/IDSL.UFA/wiki/Isotopic-Profile-DataBase-(IPDB))
@@ -90,13 +94,16 @@ Follow these steps for a quick case study (n=33) [ST002263](https://www.metabolo
 8. [**Molecular formula class detection**](https://github.com/idslme/IDSL.UFA/wiki/Molecular-formula-class-detection).
 
 ## Score Coefficients Optimization
+
 Score coefficients of **1** can be used by default to rank candidate molecular formulas. However, to achieve more desirable formula assignments, identification ranking score coefficients (**PARAM0023**) should be computed using a set of positive weights (see [**section S.1**](https://pubs.acs.org/doi/suppl/10.1021/acs.analchem.2c00563/suppl_file/ac2c00563_si_001.pdf)). To optimize these weights, a set of highest quality annotations from authentic standards should be fed in the IDSL.UFA workflow using the `score_function_optimization` tab in the [UFA parameter spreadsheet](https://raw.githubusercontent.com/idslme/IDSL.UFA/main/UFA_parameters.xlsx). **PARAM0007** in the `parameters` tab should be also selected **YES** to run this tab.
 
 ### Note
+
 The IDSL.UFA pipeline originally was developed to annotate IDSL.IPA peaklists that were generated using <sup>12</sup>C/<sup>13</sup>C isotopologue pairs by the IDSL.IPA pipeline. Nevertheless, IDSL.UFA can still annotate IDSL.IPA peaklists with non-carbon ion pairs when the fifth coefficient in the score function in the equation 6 in the main manuscript is zero to neutralize interferences of R<sup>13</sup>C values. The score coefficients can be adjusted through **PARAM0023** in the [UFA parameter spreadsheet](https://raw.githubusercontent.com/idslme/IDSL.UFA/main/UFA_parameters.xlsx).
 
 ## Citation
-Fakouri Baygi, S., Banerjee S. K., Chakraborty P., Kumar, Y. Barupal, D.K. [IDSL.UFA assigns high confidence molecular formula annotations for untargeted LC/HRMS datasets in metabolomics and exposomics](https://pubs.acs.org/doi/10.1021/acs.analchem.2c00563). *Analytical Chemistry*, **2022**, *94(39)*, 13315–13322.
+
+Fakouri Baygi, S., Banerjee S. K., Chakraborty P., Kumar, Y. Barupal, D.K. [IDSL.UFA assigns high confidence molecular formula annotations for untargeted LC/HRMS datasets in metabolomics and exposomics](https://pubs.acs.org/doi/10.1021/acs.analchem.2c00563). *Analytical Chemistry*, **2022**, *94(39)*, 13315-13322.
 
 
 Fakouri Baygi, S., Kumar, Y. Barupal, D.K. [IDSL. IPA characterizes the organic chemical space in untargeted LC/HRMS datasets](https://pubs.acs.org/doi/10.1021/acs.jproteome.2c00120). *Journal of proteome research*, **2022**, *21(6)*, 1485-1494.
