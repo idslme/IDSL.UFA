@@ -38,6 +38,7 @@ UFA_formula_source <- function(PARAM_FormSource) {
     molecularFormulaDatabase <- as.vector(formulaSourceFile[, 1])
   } else if (moleFormFileFormat == "txt") {
     molecularFormulaDatabase <- readLines(formula_source_file, warn = FALSE)
+    retentionTime <- NULL
   } else {
     stop(IPA_logRecorder("Inconsistent format for 'FS0001'!"))
   }

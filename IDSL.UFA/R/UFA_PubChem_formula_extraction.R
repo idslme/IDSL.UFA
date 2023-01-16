@@ -58,7 +58,7 @@ UFA_PubChem_formula_extraction <- function(path = getwd()) {
   message("Completed aggregating molecular formulas from `SDF` data!")
   ##
   PubChemFormulaFileName <- gsub("-", "_", paste0(path, "/PubChemFormula_", Sys.Date(), ".txt"), fixed = TRUE)
-  write.table(PubChemFormulas, file = PubChemFormulaFileName, quote = FALSE, sep = "\n", row.names = FALSE, col.names = FALSE)
+  write.table(PubChemFormulas, file = PubChemFormulaFileName, col.names = FALSE, row.names = FALSE, quote = FALSE)
   message(paste0("Stored molecular formulas as `", PubChemFormulaFileName,"` in the `", path, "` directory!"))
   ##
   return()
