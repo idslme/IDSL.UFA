@@ -62,7 +62,7 @@ Follow these steps for a quick case study (n=33) [ST002263](https://www.metabolo
 
 2. Download these pre-calculated [IPDBs](https://zenodo.org/record/7512923/preview/IPDB_v1.8.zip#tree_item16) and use positive or negative mode IPDB from RefMetDB folder according to the IDSL.IPA folder results. RefMet represents [A **Ref**erence list of **Met**abolite names](https://www.metabolomicsworkbench.org/databases/refmet/).
 
-3. IDSL.UFA requires 30 parameters distributed into 4 separate sections. For this study, use default parameter values presented in the [UFA parameter spreadsheet](https://raw.githubusercontent.com/idslme/IDSL.IPA/main/IPA_parameters.xlsx). Next, Provide address for 
+3. IDSL.UFA requires 30 parameters distributed into 4 separate sections. For this study, use default parameter values presented in the [UFA parameter spreadsheet](https://raw.githubusercontent.com/idslme/IDSL.UFA/main/UFA_parameters.xlsx). Next, Provide address for 
 	
 	3.1. **PARAM0004** for the *Address of the IPDB (.Rdata)*
 	
