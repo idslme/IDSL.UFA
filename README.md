@@ -97,9 +97,7 @@ Follow these steps for a quick case study (n=33) [ST002263](https://www.metabolo
 
 Score coefficients of **1** can be used by default to rank candidate molecular formulas. However, to achieve more desirable formula assignments, identification ranking score coefficients (**PARAM0023**) should be computed using a set of positive weights (see [**section S.1**](https://pubs.acs.org/doi/suppl/10.1021/acs.analchem.2c00563/suppl_file/ac2c00563_si_001.pdf)). To optimize these weights, a set of highest quality annotations from authentic standards should be fed in the IDSL.UFA workflow using the `score_function_optimization` tab in the [UFA parameter spreadsheet](https://raw.githubusercontent.com/idslme/IDSL.UFA/main/UFA_parameters.xlsx). **PARAM0007** in the `parameters` tab should be also selected **YES** to run this tab.
 
-### Note
-
-The IDSL.UFA pipeline originally was developed to annotate IDSL.IPA peaklists that were generated using <sup>12</sup>C/<sup>13</sup>C isotopologue pairs by the IDSL.IPA pipeline. Nevertheless, IDSL.UFA can still annotate IDSL.IPA peaklists with non-carbon ion pairs when the fifth coefficient in the score function in the equation 6 in the main manuscript is zero to neutralize interferences of R<sup>13</sup>C values. The score coefficients can be adjusted through **PARAM0023** in the [UFA parameter spreadsheet](https://raw.githubusercontent.com/idslme/IDSL.UFA/main/UFA_parameters.xlsx).
+**Note:** The IDSL.UFA pipeline originally was developed to annotate IDSL.IPA peaklists that were generated using <sup>12</sup>C/<sup>13</sup>C isotopologue pairs by the IDSL.IPA pipeline. Nevertheless, IDSL.UFA can still annotate IDSL.IPA peaklists with non-carbon ion pairs when the fifth coefficient in the score function in the equation 6 in the main manuscript is zero to neutralize interferences of R<sup>13</sup>C values. The score coefficients can be adjusted through **PARAM0023** in the [UFA parameter spreadsheet](https://raw.githubusercontent.com/idslme/IDSL.UFA/main/UFA_parameters.xlsx).
 
 ## Citation
 
