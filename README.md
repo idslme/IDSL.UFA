@@ -91,7 +91,7 @@ UFA_workflow("Address of the UFA parameter spreadsheet")
 	
 	5.2. Aligned molecular formula table in the *aligned_molecular_formula_table* directory in the *.Rdata* and *.csv* formats. We strongly recommend to familiarize yourself with the structure of this table to find the most probable candidate molecular formulas.
 	
-	5.3. If you had selected numbers greater than **0** for **PARAM0024**, match spectra figures are presented in the `UFA_spectra` folder.
+	5.3. If you had selected numbers greater than **0** for **PARAM0024**, match spectra figures are presented in the *UFA_spectra* folder.
 
 ## [**Wiki**](https://github.com/idslme/IDSL.UFA/wiki)
 
