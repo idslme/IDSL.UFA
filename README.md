@@ -11,7 +11,7 @@
 [![DOI](https://zenodo.org/badge/140601694.svg)](https://zenodo.org/record/7512923#.Y7m-DdXMJPY)
 <!-- badges: end -->
 
-**United Formula Annotation (UFA)** by the [**Integrated Data Science Laboratory for Metabolomics and Exposomics (IDSL.ME)**](https://www.idsl.me/) is a light-weight R package to annotate peaklists from the [**IDSL.IPA**](https://github.com/idslme/IDSL.IPA) package with molecular formula of a prioritized chemical space using an isotopic profile matching approach. The IDSL.UFA pipeline only requires MS1 for formula annotation.
+**United Formula Annotation (UFA)** by the [**Integrated Data Science Laboratory for Metabolomics and Exposomics (IDSL.ME)**](https://www.idsl.me/) is a light-weight R package to annotate peaklists from the [**IDSL.IPA**](https://github.com/idslme/IDSL.IPA) package with molecular formula of a prioritized chemical space using an isotopic profile matching approach. The IDSL.UFA pipeline only requires MS1 for molecular formula annotation.
 
 ## <img src='UFA_educational_files/Figures/IDSL.UFA-TOC_Art.png' align="right" />
 
@@ -28,18 +28,18 @@
 
 ## Background
 
-A chemical compound's molecular formula represents its elemental composition, and is a fundamental property. Assigning molecular formulas to peaks in data generated using untargeted LC/HRMS can help in gaining biological insights from metabolomics and exposomics datasets. It can complement the peak annotation pipelines that need MS2 spectra to assign a structural identity to a peak. Formulas can be assigned using only MS1 spectral data which is available for every sample analyzed using a LC/HRMS instrument in a metabolomics or exposomics study.  
+A chemical compound's ***molecular formula*** represents its elemental composition, and is a fundamental property. Assigning molecular formulas to peaks in data generated using untargeted LC/HRMS can help in gaining biological insights from metabolomics and exposomics datasets. Molecular formula annotation can also complement the peak annotation pipelines that need MS2 spectra to assign a structural identity to a peak. Formulas can be assigned using only MS1 spectral data which is available for every sample analyzed using a LC/HRMS instrument in metabolomics and exposomics studies.  
 
-Because of the naturally occuring isotope atoms for each element, MS1 spectral data have more than one mass to charge ratio (m/z) values observed for an ionized species. The isotopic pattern for a chemical structure can be accurately predicted using a set of combinatorial rules that uses atomic mass tables provided by the [International Union of Pure and Applied Chemistry (IUPAC)](https://www.isotopesmatter.com).  To assign a molecular formula, the theoretical isotopic profile of carbon-containing compounds can be queried against the MS1 spectral data using a set of matching criteria and scoring system. Because of the universality of molecular formula assignment, almost all commercial and academic software to process untargeted LC/HRMS datasets have a feature to search a single or list of molecular formulas against the raw MS1 data. Community guidelines for peak annotation also recommend performing the molecular formula assignment step on untargeted LC/HRMS datasets. 
+Because of the naturally occuring isotope atoms for each element, MS1 spectral data have more than one mass to charge ratio (m/z) values observed for an ionized species. The isotopic pattern for a chemical structure can be accurately predicted using a set of combinatorial rules that uses atomic mass tables provided by the [International Union of Pure and Applied Chemistry (IUPAC)](https://www.isotopesmatter.com). To assign a molecular formula, the theoretical isotopic profile of carbon-containing compounds can be queried against the MS1 spectral data using a set of matching criteria and ranking system. The universality of molecular formula assignment can allow almost all commercial and academic software to process untargeted LC/HRMS datasets to search a single or list of molecular formulas against the raw MS1 data. Community guidelines for peak annotation also recommend performing the molecular formula assignment step on untargeted LC/HRMS datasets. 
 
-While existing solutions offer a straightforward solution to match theoretical isotopic patterns against the MS1 spectral data, there is still an unmet need to improve the workflow for larger studies and various sources of molecular formula. This is important for exposomics studies where we do expect to see many more compounds from formula sources other than common metabolite databases.
+While existing solutions offer a straightforward solution to match theoretical isotopic patterns against the MS1 spectral data, there is still unmet needs to improve the workflow for larger studies and various sources of molecular formula. This is important for exposomics studies where we do expect to see many more compounds from formula sources other than common metabolite databases.
 
 ## Features of IDSL.UFA
 
 1) Parameter selection through a well-described [parameter spreadsheet](https://raw.githubusercontent.com/idslme/IDSL.UFA/main/UFA_parameters.xlsx)
 2) Generating comprehensive *in-silico* theoretical libraries using natural isotopic distribution profiles
 3) Annotating high-throughput and population size studies (n > 500)
-4) Aggregating annotated molecular formulas on the aligned peak table. This is a very unique feature that only presented by IDSL.UFA. To familiarize with this statistical mass spectrometry feature, try **PARAM0006** in the `parameters` tab in the [UFA parameter spreadsheet](https://raw.githubusercontent.com/idslme/IDSL.UFA/main/UFA_parameters.xlsx)
+4) Aggregating annotated molecular formulas on the aligned peak table. This is a very unique feature that is only presented by IDSL.UFA. To familiarize with this statistical mass spectrometry feature, try **PARAM0006** in the `parameters` tab in the [UFA parameter spreadsheet](https://raw.githubusercontent.com/idslme/IDSL.UFA/main/UFA_parameters.xlsx)
 5) Generating batch untargeted isotopic profile match figures
 6) Compatibility with parallel processing in Windows and Linux environments
 
@@ -56,13 +56,13 @@ To annotate your mass spectrometry data (**mzXML**, **mzML**, **netCDF**), mass 
 
 ## Quick Batch Example
 
-Follow these steps for a quick case study (n=33) [ST002263](https://www.metabolomicsworkbench.org/data/DRCCMetadata.php?Mode=Study&StudyID=ST002263&DataMode=AllData&ResultType=1) which has Thermo Q Exactive HF hybrid Orbitrap data collected in the HILIC-ESI-POS/NEG modes. 
+Follow these steps for a quick case study (n = 33) [ST002263](https://www.metabolomicsworkbench.org/data/DRCCMetadata.php?Mode=Study&StudyID=ST002263&DataMode=AllData&ResultType=1) which has Thermo Q Exactive HF hybrid Orbitrap data collected in the HILIC-ESI-POS/NEG modes. 
 
-1. Process raw mass spectrometry data and chromatographic information using the method described by [IDSL.IPA](https://github.com/idslme/IDSL.IPA#quick-batch-example) 
+1. Process raw mass spectrometry data to generate chromatographics information using the method described by [IDSL.IPA](https://github.com/idslme/IDSL.IPA#quick-batch-example) for this study.
 
 2. Download these pre-calculated [IPDBs](https://zenodo.org/record/7512923/preview/IPDB_v1.8.zip#tree_item16) and use positive or negative mode IPDB from RefMetDB folder according to the IDSL.IPA folder results. RefMet represents [A **Ref**erence list of **Met**abolite names](https://www.metabolomicsworkbench.org/databases/refmet/).
 
-3. IDSL.UFA requires 30 parameters distributed into 4 separate sections. For this study, use default parameter values presented in the [UFA parameter spreadsheet](https://raw.githubusercontent.com/idslme/IDSL.UFA/main/UFA_parameters.xlsx). Next, Provide address for 
+3. IDSL.UFA requires 30 parameters distributed into 4 separate sections for a full scale analysis. For this study, use default parameter values presented in the [UFA parameter spreadsheet](https://raw.githubusercontent.com/idslme/IDSL.UFA/main/UFA_parameters.xlsx). Next, provide information for 
 	
 	3.1. **PARAM0004** for the *Address of the IPDB (.Rdata)*
 	
@@ -78,13 +78,22 @@ Follow these steps for a quick case study (n=33) [ST002263](https://www.metabolo
 	
 	3.7. You may also increase the number of processing threads using **PARAM0008** according to your computational power
 
-4. Run this command in R/Rstudio console or terminal: `IDSL.UFA::UFA_workflow("Address of the UFA parameter spreadsheet")`
+4. Run this command in the R/Rstudio console or terminal
 
-5. You may parse the results at the address you provided for **PARAM0014**.
+	library(IDSL.UFA)
+	UFA_workflow("Address of the UFA parameter spreadsheet")
+
+5. You see the results in the address you provided for **PARAM0014** including:
+
+	5.1. Individual annotated peaklists with molecular formulas for each HRMS file in the *annotated_mf_tables* directory in the *.Rdata* and *.csv* formats
+	
+	5.2. Aligned molecular formula table in the *aligned_molecular_formula_table* directory in the *.Rdata* and *.csv* formats. We strongly recommend to familiarize yourself with the structure of this table to find the most probable candidate molecular formulas.
+	
+	5.3. If you had selected numbers greater than **0** for **PARAM0024**, match spectra figures are presented in the `UFA_spectra` folder.
 
 ## [**Wiki**](https://github.com/idslme/IDSL.UFA/wiki)
 
-1. [**A population size study with 499 indivdual mass spectrometry file**](https://github.com/idslme/IDSL.UFA/wiki/IDSL.UFA-for-MTBLS1684-study)
+1. [**A population size study with 499 individual mass spectrometry file**](https://github.com/idslme/IDSL.UFA/wiki/IDSL.UFA-for-MTBLS1684-study)
 2. [**List of consistent labeled isotopes**](https://github.com/idslme/IDSL.UFA/wiki/Consistent-Labeled-Isotopes)
 3. [**Standard Adduct Type**](https://github.com/idslme/IDSL.UFA/wiki/Standard-Adduct-Type)
 4. [**Definitions of Peak Spacing and Intensity Cutoff**](https://github.com/idslme/IDSL.UFA/wiki/Peak-Spacing-and-Intensity-Cutoff)
