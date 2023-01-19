@@ -80,8 +80,10 @@ Follow these steps for a quick case study (n = 33) [ST002263](https://www.metabo
 
 4. Run this command in the R/Rstudio console or terminal
 
-	library(IDSL.UFA)
-	UFA_workflow("Address of the UFA parameter spreadsheet")
+```
+library(IDSL.UFA)
+UFA_workflow("Address of the UFA parameter spreadsheet")
+```
 
 5. You see the results in the address you provided for **PARAM0014** including:
 
