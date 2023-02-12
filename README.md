@@ -35,12 +35,13 @@ While existing solutions offer a straightforward solution to match theoretical i
 
 ## Features of IDSL.UFA
 
-1) Parameter selection through a well-described [parameter spreadsheet](https://raw.githubusercontent.com/idslme/IDSL.UFA/main/UFA_parameters.xlsx)
-2) Generating comprehensive *in-silico* theoretical libraries using natural isotopic distribution profiles
-3) Annotating high-throughput and population size studies (n > 500)
+1) Parameter selection through a user-friendly and well-described [parameter spreadsheet](https://raw.githubusercontent.com/idslme/IDSL.UFA/main/UFA_parameters.xlsx)
+2) Analyzing population size untargeted studies (n > 500)
+3) Generating comprehensive *in-silico* theoretical libraries (known as [IPDB](https://github.com/idslme/IDSL.UFA/wiki/Isotopic-Profile-DataBase-(IPDB))) using natural isotopic distribution profiles
 4) Aggregating annotated molecular formulas on the aligned peak table. This is a very unique feature that is only presented by IDSL.UFA. To familiarize with this statistical mass spectrometry feature, try **PARAM0006** in the `parameters` tab in the [UFA parameter spreadsheet](https://raw.githubusercontent.com/idslme/IDSL.UFA/main/UFA_parameters.xlsx)
-5) Generating batch untargeted isotopic profile match figures
-6) Compatibility with parallel processing in Windows and Linux environments
+5) Ranking candidate molecular formulas for a peak
+6) Generating batch untargeted isotopic profile match figures
+7) Parallel processing in Windows and Linux environments
 
 ## Installation
 
@@ -59,7 +60,7 @@ Follow these steps for a quick case study (n = 33) [ST002263](https://www.metabo
 
 1. Process raw mass spectrometry data to generate chromatographics information using the method described by [IDSL.IPA](https://github.com/idslme/IDSL.IPA#quick-batch-example) for this study.
 
-2. Download these pre-calculated [IPDBs](https://zenodo.org/record/7512923/preview/IPDB_v1.8.zip#tree_item16) and use positive or negative mode IPDB from RefMetDB folder according to the IDSL.IPA folder results. RefMet represents [A **Ref**erence list of **Met**abolite names](https://www.metabolomicsworkbench.org/databases/refmet/).
+2. Download these pre-calculated [IPDBs](https://zenodo.org/record/7512923/preview/IPDB_v1.8.zip#tree_item16) and use positive or negative mode IPDB from RefMetDB folder according to the IDSL.IPA folder results. RefMet represents a [**Ref**erence list of **Met**abolite names](https://www.metabolomicsworkbench.org/databases/refmet/).
 
 3. IDSL.UFA requires 30 parameters distributed into 4 separate sections for a full scale analysis. For this study, use default parameter values presented in the [UFA parameter spreadsheet](https://raw.githubusercontent.com/idslme/IDSL.UFA/main/UFA_parameters.xlsx). Next, provide information for 
 	
@@ -106,7 +107,6 @@ UFA_workflow("Address of the UFA parameter spreadsheet")
 
 ## Citation
 
-Fakouri Baygi, S., Banerjee S. K., Chakraborty P., Kumar, Y. Barupal, D.K. [IDSL.UFA assigns high confidence molecular formula annotations for untargeted LC/HRMS datasets in metabolomics and exposomics](https://pubs.acs.org/doi/10.1021/acs.analchem.2c00563). *Analytical Chemistry*, **2022**, *94(39)*, 13315-13322.
+[1] Fakouri Baygi, S., Banerjee S. K., Chakraborty P., Kumar, Y. Barupal, D.K. [IDSL.UFA assigns high confidence molecular formula annotations for untargeted LC/HRMS datasets in metabolomics and exposomics](https://pubs.acs.org/doi/10.1021/acs.analchem.2c00563). *Analytical Chemistry*, **2022**, *94(39)*, 13315-13322.
 
-
-Fakouri Baygi, S., Kumar, Y. Barupal, D.K. [IDSL. IPA characterizes the organic chemical space in untargeted LC/HRMS datasets](https://pubs.acs.org/doi/10.1021/acs.jproteome.2c00120). *Journal of proteome research*, **2022**, *21(6)*, 1485-1494.
+[2] Fakouri Baygi, S., Kumar, Y. Barupal, D.K. [IDSL. IPA characterizes the organic chemical space in untargeted LC/HRMS datasets](https://pubs.acs.org/doi/10.1021/acs.jproteome.2c00120). *Journal of proteome research*, **2022**, *21(6)*, 1485-1494.
