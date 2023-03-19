@@ -101,9 +101,10 @@ UFA_workflow("Address of the UFA parameter spreadsheet")
 4. [**Definitions of Peak Spacing and Intensity Cutoff**](https://github.com/idslme/IDSL.UFA/wiki/Peak-Spacing-and-Intensity-Cutoff)
 5. [**Isotopic Profile DataBase (IPDB)**](https://github.com/idslme/IDSL.UFA/wiki/Isotopic-Profile-DataBase-(IPDB))
 6. [**PubChem molecular formula database for IDSL.UFA**](https://github.com/idslme/IDSL.UFA/wiki/PubChem-molecular-formula-database-for-IDSL.UFA)
-7. [**Definitions of NDCS and RCS**](https://github.com/idslme/IDSL.UFA/wiki/NDCS-RCS)
-8. [**Score Coefficients Optimization**](https://github.com/idslme/IDSL.UFA/wiki/Score-Coefficients-Optimization)
-9. [**Molecular formula class detection**](https://github.com/idslme/IDSL.UFA/wiki/Molecular-formula-class-detection)
+7. [**Definitions of NEME and PCS**](https://github.com/idslme/IDSL.UFA/wiki/NEME-PCS)
+8. [**Definitions of NDCS and RCS**](https://github.com/idslme/IDSL.UFA/wiki/NDCS-RCS)
+9. [**Score Coefficients Optimization**](https://github.com/idslme/IDSL.UFA/wiki/Score-Coefficients-Optimization)
+10. [**Molecular formula class detection**](https://github.com/idslme/IDSL.UFA/wiki/Molecular-formula-class-detection)
 
 ## Citation
 
