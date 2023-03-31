@@ -12,7 +12,8 @@ UFA_formula_source <- function(PARAM_FormSource) {
   ## To create log record for IDSL.UFA
   initiation_time <- Sys.time()
   timeZone <- tryCatch(Sys.timezone(), warning = function(w) {"UTC"}, error = function(e) {"UTC"})
-  .GlobalEnv$.logIPA <- paste0(output_path, "/logIPDB_", IPDB_file_name, ".txt")
+  .logIPA <- NULL
+  .logIPA <<- paste0(output_path, "/logIPDB_", IPDB_file_name, ".txt")
   IPA_logRecorder(paste0(rep("", 100), collapse = "="))
   IPA_logRecorder("Type <<< citation('IDSL.UFA') >>> for citing this R package in publications.")
   IPA_logRecorder(paste0("csv/txt:  ", formula_source_file))
@@ -20,9 +21,9 @@ UFA_formula_source <- function(PARAM_FormSource) {
   IPA_logRecorder(paste0(rep("", 100), collapse = "-"))
   IPA_logRecorder("Initiated isotopic profile database (IPDB) production from a source of known molecular formulas!")
   IPA_logRecorder(paste0(as.character(initiation_time), " ", timeZone))
-  IPA_logRecorder("", printMessage = FALSE)
-  IPA_logRecorder("", printMessage = FALSE)
-  IPA_logRecorder(paste0(PARAM_FormSource[, 1], "\t", PARAM_FormSource[, 2]),  printMessage = FALSE)
+  IPA_logRecorder("", allowedPrinting = FALSE)
+  IPA_logRecorder("", allowedPrinting = FALSE)
+  IPA_logRecorder(paste0(PARAM_FormSource[, 1], "\t", PARAM_FormSource[, 2]),  allowedPrinting = FALSE)
   IPA_logRecorder(paste0(rep("", 100), collapse = "-"))
   ##
   ##############################################################################
@@ -38,7 +39,6 @@ UFA_formula_source <- function(PARAM_FormSource) {
     molecularFormulaDatabase <- as.vector(formulaSourceFile[, 1])
   } else if (moleFormFileFormat == "txt") {
     molecularFormulaDatabase <- readLines(formula_source_file, warn = FALSE)
-    retentionTime <- NULL
   } else {
     stop(IPA_logRecorder("Inconsistent format for 'FS0001'!"))
   }
@@ -89,11 +89,11 @@ UFA_formula_source <- function(PARAM_FormSource) {
   IPA_logRecorder(paste0(rep("", 100), collapse = "-"))
   required_time <- completion_time - initiation_time
   IPA_logRecorder(paste0("The required processing time was `", required_time, " ", attributes(required_time)$units, "`"))
-  IPA_logRecorder(paste0(as.character(completion_time), " ", timeZone), printMessage = FALSE)
-  IPA_logRecorder("", printMessage = FALSE)
-  IPA_logRecorder("", printMessage = FALSE)
+  IPA_logRecorder(paste0(as.character(completion_time), " ", timeZone), allowedPrinting = FALSE)
+  IPA_logRecorder("", allowedPrinting = FALSE)
+  IPA_logRecorder("", allowedPrinting = FALSE)
   IPA_logRecorder("Successfully stored isotopic profile database (IPDB) from known molecular formulas!")
-  IPA_logRecorder(paste0(rep("", 100), collapse = "="), printMessage = FALSE)
+  IPA_logRecorder(paste0(rep("", 100), collapse = "="), allowedPrinting = FALSE)
   ##
   ##############################################################################
   ##

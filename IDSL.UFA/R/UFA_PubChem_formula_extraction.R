@@ -1,6 +1,14 @@
-UFA_PubChem_formula_extraction <- function(path = getwd()) {
+UFA_PubChem_formula_extraction <- function(path) {
   ##
-  message("This module may require a few hours to complete downloading and aggregating molecular formulas!")
+  ##############################################################################
+  ##
+  if (!dir.exists(path)) {
+    tryCatch(dir.create(path, recursive = TRUE), warning = function(w) {stop(paste0("Can't create `", path, "`!"))})
+  }
+  ##
+  ##############################################################################
+  ##
+  IPA_message("This module may require a few hours to complete downloading and aggregating molecular formulas!", failedMessage = FALSE)
   sdfPubChemURL <- "https://ftp.ncbi.nlm.nih.gov/pubchem/Compound/CURRENT-Full/SDF/"
   ##
   sdfPath <- paste0(path, "/SDF")
@@ -9,7 +17,7 @@ UFA_PubChem_formula_extraction <- function(path = getwd()) {
   }
   ##
   sdfURLs <- paste0(sdfPath, "/sdfURLs.txt")
-  download.file(url = sdfPubChemURL, destfile = sdfURLs, quiet = TRUE, mode = "wb")
+  utils::download.file(url = sdfPubChemURL, destfile = sdfURLs, quiet = TRUE, mode = "wb")
   sdfURLtxt <- readLines(sdfURLs)
   tryCatch(unlink(sdfURLs, recursive = TRUE), error = function(e) {warning(paste0("Can't delete `", sdfURLs, "`!"))})
   ##
@@ -29,7 +37,7 @@ UFA_PubChem_formula_extraction <- function(path = getwd()) {
   while (i < LsdfList) {
     i <- i + 1
     Sys.sleep(2) ## To wait for two seconds between downloads
-    tryCatch(download.file(url = paste0(sdfPubChemURL, sdfList[i]), destfile = paste0(sdfPath, "/", sdfList[i]), quiet = TRUE, mode = "wb"),
+    tryCatch(utils::download.file(url = paste0(sdfPubChemURL, sdfList[i]), destfile = paste0(sdfPath, "/", sdfList[i]), quiet = TRUE, mode = "wb"),
              error = function(e) {
                i <- i - 1
                Sys.sleep(180) ## To wait for three minutes and re-start downloading files
@@ -39,9 +47,9 @@ UFA_PubChem_formula_extraction <- function(path = getwd()) {
   }
   close(progressBARboundaries)
   ##
-  message("Completed downloading `SDF` data!")
+  IPA_message("Completed downloading `SDF` data!", failedMessage = FALSE)
   ##
-  message("Initiated aggregating molecular formulas from `SDF` data!")
+  IPA_message("Initiated aggregating molecular formulas from `SDF` data!", failedMessage = FALSE)
   ##
   progressBARboundaries <- txtProgressBar(min = 0, max = LsdfList, initial = 0, style = 3)
   ##
@@ -55,11 +63,11 @@ UFA_PubChem_formula_extraction <- function(path = getwd()) {
     }
   }))
   close(progressBARboundaries)
-  message("Completed aggregating molecular formulas from `SDF` data!")
+  IPA_message("Completed aggregating molecular formulas from `SDF` data!", failedMessage = FALSE)
   ##
   PubChemFormulaFileName <- gsub("-", "_", paste0(path, "/PubChemFormula_", Sys.Date(), ".txt"), fixed = TRUE)
-  write.table(PubChemFormulas, file = PubChemFormulaFileName, col.names = FALSE, row.names = FALSE, quote = FALSE)
-  message(paste0("Stored molecular formulas as `", PubChemFormulaFileName,"` in the `", path, "` directory!"))
+  write.table(PubChemFormulas, file = PubChemFormulaFileName, quote = FALSE, sep = "\n", row.names = FALSE, col.names = FALSE)
+  IPA_message(paste0("Stored molecular formulas as `", PubChemFormulaFileName,"` in the `", path, "` directory!"), failedMessage = FALSE)
   ##
   return()
 }

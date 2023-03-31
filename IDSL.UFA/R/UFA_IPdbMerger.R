@@ -1,4 +1,4 @@
-UFA_IPdbMerger <- function(path = getwd(), vecIPDB) {
+UFA_IPdbMerger <- function(path, vecIPDB) {
   ##
   MassMAIso <- NULL
   MolecularFormulaVec <- NULL

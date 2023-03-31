@@ -1,6 +1,6 @@
 UFA_enumerated_chemical_space_xlsxAnalyzer <- function(spreadsheet) {
   ##
-  print("Initiated analyzing the `enumerated_chemical_space` tab!")
+  IPA_message("Initiated analyzing the `enumerated_chemical_space` tab!", failedMessage= FALSE)
   checkpoint_parameter <- FALSE
   if (length(spreadsheet) == 1) {
     if (typeof(spreadsheet) == "character") {
@@ -8,16 +8,17 @@ UFA_enumerated_chemical_space_xlsxAnalyzer <- function(spreadsheet) {
         PARAM_ECS <- readxl::read_xlsx(spreadsheet, sheet = "enumerated_chemical_space")
         checkpoint_parameter <- TRUE
       } else {
-        print("The UFA spreadsheet not found! It should be an Excel file with .xlsx extention!")
+        IPA_message("The `enumerated_chemical_space` spreadsheet not found! It should be an Excel file with .xlsx extention!")
       }
     } else {
-      print("The UFA spreadsheet was not produced properly!")
+      IPA_message("The `enumerated_chemical_space` spreadsheet was not produced properly!")
     }
   } else {
-    print("The UFA spreadsheet was not produced properly!")
+    IPA_message("The `enumerated_chemical_space` spreadsheet was not produced properly!")
   }
+  ##############################################################################
   if (checkpoint_parameter) {
-    ############################################################################
+    ##
     tr1_sub_pattern <- Sys.time()
     ##
     x_address_IPDB <- which(PARAM_ECS$Parameter == "IPDB output address")
@@ -26,7 +27,7 @@ UFA_enumerated_chemical_space_xlsxAnalyzer <- function(spreadsheet) {
     if (!dir.exists(address_IPDB)) {
       dir.create(address_IPDB, recursive = TRUE)
       if (!dir.exists(address_IPDB)) {
-        print(paste0("ERROR!!! Problem with 'IPDB output address' in the `enumerated_chemical_space` tab!! Can't create `", address_IPDB, "` folder!"))
+        IPA_message(paste0("ERROR!!! Problem with 'IPDB output address' in the `enumerated_chemical_space` tab!! Can't create `", address_IPDB, "` folder!"))
         checkpoint_parameter <- FALSE
       }
     }
@@ -35,12 +36,12 @@ UFA_enumerated_chemical_space_xlsxAnalyzer <- function(spreadsheet) {
     peak_spacing <- as.numeric(PARAM_ECS$`User input 2`[x_peak_spacing])
     if (is.na(peak_spacing)) {
       checkpoint_parameter <- FALSE
-      print("Error!!! Peak Spacing in the `enumerated_chemical_space` tab should be a positive number!")
+      IPA_message("Error!!! Peak Spacing in the `enumerated_chemical_space` tab should be a positive number!")
     }
     ##
     intensity_cutoff_str <- PARAM_ECS[which(PARAM_ECS$Parameter == "Theoretical isotopic profile intensity cutoff (%)"), 2]
     if (length(intensity_cutoff_str) == 0) {
-      print("Error!!! Problem with `Theoretical isotopic profile intensity cutoff (%)` in the `enumerated_chemical_space` tab!")
+      IPA_message("Error!!! Problem with `Theoretical isotopic profile intensity cutoff (%)` in the `enumerated_chemical_space` tab!")
       checkpoint_parameter <- FALSE
       ##
       c <- 5
@@ -56,7 +57,7 @@ UFA_enumerated_chemical_space_xlsxAnalyzer <- function(spreadsheet) {
       tryCatch(eval(parse(text = intensity_cutoff_str)), error = function(e) {checkStrInt <- TRUE})
       if (checkStrInt) {
         checkpoint_parameter <- FALSE
-        print("Error!!! Problem with `Theoretical isotopic profile intensity cutoff (%)` in the `enumerated_chemical_space` tab!")
+        IPA_message("Error!!! Problem with `Theoretical isotopic profile intensity cutoff (%)` in the `enumerated_chemical_space` tab!")
       }
     }
     ##
@@ -65,14 +66,14 @@ UFA_enumerated_chemical_space_xlsxAnalyzer <- function(spreadsheet) {
     UFA_IP_memeory_variables <- eval(parse(text = IP_mem_usage))
     if (length(UFA_IP_memeory_variables) != 3) {
       checkpoint_parameter <- FALSE
-      print("Error!!! Isotopic profile calculations memory usage in the `enumerated_chemical_space` tab should be a vector of three positive numbers!")
+      IPA_message("Error!!! Isotopic profile calculations memory usage in the `enumerated_chemical_space` tab should be a vector of three positive numbers!")
     }
     ##
     x_npc <- which(PARAM_ECS$Parameter == "Number of parallel threads")
     number_processing_threads <- as.numeric(PARAM_ECS$`User input 2`[x_npc])
     if (is.na(number_processing_threads)) {
       checkpoint_parameter <- FALSE
-      print("Error!!! Number of parallel threads in the `enumerated_chemical_space` tab should be an integer!")
+      IPA_message("Error!!! Number of parallel threads in the `enumerated_chemical_space` tab should be an integer!")
     }
     ##
     mr_x <- which(PARAM_ECS$Parameter == "Mass range (Da)")
@@ -80,12 +81,12 @@ UFA_enumerated_chemical_space_xlsxAnalyzer <- function(spreadsheet) {
     HIGHEST_mass <- as.numeric(PARAM_ECS$`User input 2`[mr_x])
     if (is.na(LOWEST_mass) | is.na(HIGHEST_mass)) {
       checkpoint_parameter <- FALSE
-      print("Error!!! Check 'Mass range' in the `enumerated_chemical_space` tab!")
+      IPA_message("Error!!! Check 'Mass range' in the `enumerated_chemical_space` tab!")
     } else {
       if (!is.na(LOWEST_mass) & !is.na(HIGHEST_mass)) {
         if (LOWEST_mass > HIGHEST_mass) {
           checkpoint_parameter <- FALSE
-          print("Error!!! Check 'Mass range' in the `enumerated_chemical_space` tab!")
+          IPA_message("Error!!! Check 'Mass range' in the `enumerated_chemical_space` tab!")
         }
       }
     }
@@ -95,12 +96,12 @@ UFA_enumerated_chemical_space_xlsxAnalyzer <- function(spreadsheet) {
     c_xyz2 <- as.numeric(PARAM_ECS$`User input 2`[c_x])
     if (is.na(c_xyz1) | is.na(c_xyz2)) {
       checkpoint_parameter <- FALSE
-      print("Error!!! Check the 'Carbon' range in the `enumerated_chemical_space` tab!")
+      IPA_message("Error!!! Check the 'Carbon' range in the `enumerated_chemical_space` tab!")
     } else {
       if (!is.na(c_xyz1) & !is.na(c_xyz2)) {
         if (c_xyz1 > c_xyz2) {
           checkpoint_parameter <- FALSE
-          print("Error!!! Check the 'Carbon' range in the `enumerated_chemical_space` tab!")
+          IPA_message("Error!!! Check the 'Carbon' range in the `enumerated_chemical_space` tab!")
         }
       }
     }
@@ -348,11 +349,11 @@ UFA_enumerated_chemical_space_xlsxAnalyzer <- function(spreadsheet) {
     maxNUM14elements <- as.numeric(PARAM_ECS$`User input 2`[grep("Rule 4", PARAM_ECS$Parameter, ignore.case = TRUE)])
     if (is.na(maxNUM14elements)) {
       checkpoint_parameter <- FALSE
-      print("Error!!! Check 'Rule 4 (Maximum number of elements rule)'!")
+      IPA_message("Error!!! Check 'Rule 4 (Maximum number of elements rule)'!")
     } else {
       if (maxNUM14elements > 14 & maxNUM14elements < 1) {
         checkpoint_parameter <- FALSE
-        print("Error!!! Check 'Rule 4 (Maximum number of elements rule)'!")
+        IPA_message("Error!!! Check 'Rule 4 (Maximum number of elements rule)'!")
       }
     }
     #
@@ -384,7 +385,7 @@ UFA_enumerated_chemical_space_xlsxAnalyzer <- function(spreadsheet) {
       ##
       ##########################################################################
       ##
-      print("Initiated counting essential elements combinations!")
+      IPA_message("Initiated counting essential elements combinations!", failedMessage= FALSE)
       ##
       if (number_processing_threads == 1) {
         ##
@@ -393,15 +394,15 @@ UFA_enumerated_chemical_space_xlsxAnalyzer <- function(spreadsheet) {
         }))
         ##
         if (is.null(Ess_MolVecMat)) {
-          print("Enumeration rules can not result with any chemical spaces!")
+          IPA_message("Enumeration rules can not result with any chemical spaces!")
           stop()
         }
         ##
         Ess_MolVecMat <- matrix(Ess_MolVecMat, ncol = L_EssentiaLElements)
         L_Ess_MolVecMat <- dim(Ess_MolVecMat)[1]
-        print(paste0("There are `", L_Ess_MolVecMat, "` essential elements combinations!"))
+        IPA_message(paste0("There are `", L_Ess_MolVecMat, "` essential elements combinations!"), failedMessage= FALSE)
         ##
-        print("Initiated enumerating molecular formulas!")
+        IPA_message("Initiated enumerating molecular formulas!", failedMessage= FALSE)
         MolVecMat <- do.call(rbind, lapply(1:L_Ess_MolVecMat, function(counter) {
           MolVecMat_call(counter)
         }))
@@ -409,51 +410,55 @@ UFA_enumerated_chemical_space_xlsxAnalyzer <- function(spreadsheet) {
       } else {
         ##
         osType <- Sys.info()[['sysname']]
-        if (osType == "Linux") {
+        if (osType == "Windows") {
+          ##
+          clust <- makeCluster(number_processing_threads)
+          clusterExport(clust, setdiff(ls(), c("clust")), envir = environment())
+          Ess_MolVecMat <- do.call(rbind, parLapply(clust, c_xyz1:c_xyz2, function(c) {
+            Ess_MolVecMat_call(c)
+          }))
+          stopCluster(clust)
+          ##
+          if (is.null(Ess_MolVecMat)) {
+            IPA_message("Enumeration rules can not result with any chemical spaces!")
+            stop()
+          }
+          ##
+          Ess_MolVecMat <- matrix(Ess_MolVecMat, ncol = L_EssentiaLElements)
+          L_Ess_MolVecMat <- dim(Ess_MolVecMat)[1]
+          IPA_message(paste0("There are `", L_Ess_MolVecMat, "` essential elements combinations!"), failedMessage= FALSE)
+          ##
+          IPA_message("Initiated enumerating molecular formulas!", failedMessage= FALSE)
+          clust <- makeCluster(number_processing_threads)
+          clusterExport(clust, setdiff(ls(), c("clust", "L_Ess_MolVecMat")), envir = environment())
+          MolVecMat <- do.call(rbind, parLapply(clust, 1:L_Ess_MolVecMat, function(counter) {
+            MolVecMat_call(counter)
+          }))
+          stopCluster(clust)
+          ##
+          ######################################################################
+          ##
+        } else {
           ##
           Ess_MolVecMat <- do.call(rbind, mclapply(c_xyz1:c_xyz2, function(c) {
             Ess_MolVecMat_call(c)
           }, mc.cores = number_processing_threads))
           ##
           if (is.null(Ess_MolVecMat)) {
-            print("Enumeration rules can not result with any chemical spaces!")
+            IPA_message("Enumeration rules can not result with any chemical spaces!")
             stop()
           }
           ##
           Ess_MolVecMat <- matrix(Ess_MolVecMat, ncol = L_EssentiaLElements)
           L_Ess_MolVecMat <- dim(Ess_MolVecMat)[1]
-          print(paste0("There are `", L_Ess_MolVecMat, "` essential elements combinations!"))
+          IPA_message(paste0("There are `", L_Ess_MolVecMat, "` essential elements combinations!"), failedMessage= FALSE)
           ##
-          print("Initiated enumerating molecular formulas!")
+          IPA_message("Initiated enumerating molecular formulas!", failedMessage= FALSE)
           MolVecMat <- do.call(rbind, mclapply(1:L_Ess_MolVecMat, function(counter) {
             MolVecMat_call(counter)
           }, mc.cores = number_processing_threads))
           ##
           closeAllConnections()
-          ##
-        } else if (osType == "Windows") {
-          clust <- makeCluster(number_processing_threads)
-          registerDoParallel(clust)
-          ##
-          Ess_MolVecMat <- foreach(c = c_xyz1:c_xyz2, .combine = 'rbind', .verbose = FALSE) %dopar% {
-            Ess_MolVecMat_call(c)
-          }
-          ##
-          if (is.null(Ess_MolVecMat)) {
-            print("Enumeration rules can not result with any chemical spaces!")
-            stop()
-          }
-          ##
-          Ess_MolVecMat <- matrix(Ess_MolVecMat, ncol = L_EssentiaLElements)
-          L_Ess_MolVecMat <- dim(Ess_MolVecMat)[1]
-          print(paste0("There are `", L_Ess_MolVecMat, "` essential elements combinations!"))
-          ##
-          print("Initiated enumerating molecular formulas!")
-          MolVecMat <- foreach(counter = 1:L_Ess_MolVecMat, .combine = 'rbind', .verbose = FALSE) %dopar% {
-            MolVecMat_call(counter)
-          }
-          ##
-          stopCluster(clust)
           ##
         }
       }
@@ -463,13 +468,13 @@ UFA_enumerated_chemical_space_xlsxAnalyzer <- function(spreadsheet) {
     }
   }
   if (checkpoint_parameter) {
-    print(paste0("The approximate maximum number of the candidate molecular formulas is `", L_MolVecMat, "`!"))
+    IPA_message(paste0("The approximate maximum number of the candidate molecular formulas is `", L_MolVecMat, "`!"), failedMessage= FALSE)
     ##
-    print("The required time only to iterate loops through this chemical space is :")
+    IPA_message("The required time only to iterate loops through this chemical space is :", failedMessage= FALSE)
     tr2_sub_pattern <- Sys.time()
     print(tr2_sub_pattern - tr1_sub_pattern)
     ##
-    print("Completed analyzing the `enumerated_chemical_space` tab!")
+    IPA_message("Completed analyzing the `enumerated_chemical_space` tab!", failedMessage= FALSE)
     ##
   } else {
     PARAM_ECS <- NULL

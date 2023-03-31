@@ -17,7 +17,20 @@ molecular_formula_library_search <- function(MolecularFormulaAnnotationTable, MF
     ##
     ############################################################################
     ##
-    if (osType == "Linux") {
+    if (osType == "Windows") {
+      clust <- makeCluster(number_processing_threads)
+      clusterExport(clust, setdiff(ls(), c("clust", "molecularFormula")), envir = environment())
+      ##
+      MolVecMat <- do.call(rbind, parLapply(clust, molecularFormula, function(i) {
+        formula_vector_generator(i, Elements, LElements, allowedRedundantElements = FALSE)
+      }))
+      ##
+      stopCluster(clust)
+      ##
+      ##########################################################################
+      ##
+    } else {
+      ##
       MolVecMat <- do.call(rbind, mclapply(molecularFormula, function(i) {
         formula_vector_generator(i, Elements, LElements, allowedRedundantElements = FALSE)
       }, mc.cores = number_processing_threads))
@@ -25,16 +38,6 @@ molecular_formula_library_search <- function(MolecularFormulaAnnotationTable, MF
       closeAllConnections()
       ##
       ##########################################################################
-      ##
-    } else if (osType == "Windows") {
-      clust <- makeCluster(number_processing_threads)
-      registerDoParallel(clust)
-      ##
-      MolVecMat <- foreach(i = molecularFormula, .combine = 'rbind', .verbose = FALSE) %dopar% {
-        formula_vector_generator(i, Elements, LElements, allowedRedundantElements = FALSE)
-      }
-      ##
-      stopCluster(clust)
       ##
     }
   }

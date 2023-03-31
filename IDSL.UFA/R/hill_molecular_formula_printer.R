@@ -146,24 +146,27 @@ hill_molecular_formula_printer <- function(Elements, MolVecMat, number_processin
     MolFormList <- do.call('c', lapply(1:dim(MolVecMat)[1], function(i) {
       molecular_formula_printer(orderHillElements, Elements, MolVecMat[i, ])
     }))
+    ##
   } else {
+    ##
     osType <- Sys.info()[['sysname']]
     ##
     ############################################################################
     ##
     if (osType == "Windows") {
-      clust <- makeCluster(number_processing_threads)
-      registerDoParallel(clust)
       ##
-      MolFormList <-  foreach(i = 1:dim(MolVecMat)[1], .combine = 'c', .verbose = FALSE) %dopar% {
+      clust <- makeCluster(number_processing_threads)
+      clusterExport(clust, c("molecular_formula_printer", "orderHillElements", "Elements", "MolVecMat"), envir = environment())
+      ##
+      MolFormList <- do.call('c', parLapply(clust, 1:dim(MolVecMat)[1], function(i) {
         molecular_formula_printer(orderHillElements, Elements, MolVecMat[i, ])
-      }
+      }))
       ##
       stopCluster(clust)
       ##
       ##########################################################################
       ##
-    } else if (osType == "Linux") {
+    } else {
       ##
       MolFormList <- do.call('c', mclapply(1:dim(MolVecMat)[1], function(i) {
         molecular_formula_printer(orderHillElements, Elements, MolVecMat[i, ])

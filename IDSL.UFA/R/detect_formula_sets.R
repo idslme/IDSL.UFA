@@ -18,7 +18,7 @@ detect_formula_sets  <- function(molecular_formulas, ratio_delta_HBrClFI_C = 2, 
   LElements <- length(Elements)
   ##
   molecular_formulasMat_call <- function(k) {
-    mol_vec <- formula_vector_generator(molecular_formulas[k], Elements, LElements, allowedRedundantElements = TRUE)
+    mol_vec <- formula_vector_generator(k, Elements, LElements, allowedRedundantElements = TRUE)
     xNeg <- which(mol_vec < 0)
     if (length(xNeg) > 0) {
       mol_vec <- NULL
@@ -27,25 +27,27 @@ detect_formula_sets  <- function(molecular_formulas, ratio_delta_HBrClFI_C = 2, 
   }
   ##
   if (number_processing_threads == 1) {
-    molecular_formulasMat <- do.call(rbind, lapply(1:length(molecular_formulas), function(k) {
+    molecular_formulasMat <- do.call(rbind, lapply(molecular_formulas, function(k) {
       molecular_formulasMat_call(k)
     }))
+    ##
   } else {
+    ##
     osType <- Sys.info()[['sysname']]
     ##
     if (osType == "Windows") {
       clust <- makeCluster(number_processing_threads)
-      registerDoParallel(clust)
+      clusterExport(clust, setdiff(ls(), c("clust", "molecular_formulas")), envir = environment())
       ##
-      molecular_formulasMat <- foreach(k = 1:length(molecular_formulas), .combine = 'rbind', .verbose = FALSE) %dopar% {
+      molecular_formulasMat <- do.call(rbind, parLapply(clust, molecular_formulas, function(k) {
         molecular_formulasMat_call(k)
-      }
+      }))
       ##
       stopCluster(clust)
       ##
-    } else if (osType == "Linux") {
+    } else {
       ##
-      molecular_formulasMat <- do.call(rbind, mclapply(1:length(molecular_formulas), function(k) {
+      molecular_formulasMat <- do.call(rbind, mclapply(molecular_formulas, function(k) {
         molecular_formulasMat_call(k)
       }, mc.cores = number_processing_threads))
       ##
@@ -85,9 +87,9 @@ detect_formula_sets  <- function(molecular_formulas, ratio_delta_HBrClFI_C = 2, 
   unique_molecular_formulas1 <- unique(molecular_formulas1)
   ##
   if (ratio_delta_HBrClFI_C > 0) {
-    I_call <- function(k) {
+    I_call <- function(i) {
       J <- list()
-      class_index <- which(molecular_formulas1 == unique_molecular_formulas1[k])
+      class_index <- which(molecular_formulas1 == i)
       L_class_index <- length(class_index)
       if (L_class_index > MMFC) {
         molecular_formulasMat_subset <- molecular_formulasMat[class_index, ]
@@ -120,12 +122,21 @@ detect_formula_sets  <- function(molecular_formulas, ratio_delta_HBrClFI_C = 2, 
       }
       J
     }
+    ##
+    classes_call <- function(index_molf) {
+      if (length(index_molf) > 0) {
+        MolVec <- rbind(MolFormMat1[index_molf[1], ], molecular_formulasMat[index_molf, ])
+        molf1 <- hill_molecular_formula_printer(Elements, MolVec)
+        molf1[is.na(molf1)] <- "NoOrganicGroup"
+        molf1
+      }
+    }
   }
   ##
   if (ratio_delta_HBrClFI_C == 0) {
-    I_call <- function(k) {
+    I_call <- function(i) {
       J <- list()
-      class_index <- which(molecular_formulas1 == unique_molecular_formulas1[k])
+      class_index <- which(molecular_formulas1 == i)
       L_class_index <- length(class_index)
       if (L_class_index > MMFC) {
         molecular_formulasMat_subset <- molecular_formulasMat[class_index, ]
@@ -154,21 +165,8 @@ detect_formula_sets  <- function(molecular_formulas, ratio_delta_HBrClFI_C = 2, 
       }
       J
     }
-  }
-  ##
-  if (ratio_delta_HBrClFI_C > 0) {
-    classes_call <- function(k) {
-      index_molf <- I[[k]]
-      if (length(index_molf) > 0) {
-        MolVec <- rbind(MolFormMat1[index_molf[1], ], molecular_formulasMat[index_molf, ])
-        molf1 <- hill_molecular_formula_printer(Elements, MolVec)
-        molf1[is.na(molf1)] <- "NoOrganicGroup"
-        molf1
-      }
-    }
-  } else if (ratio_delta_HBrClFI_C == 0) {
-    classes_call <- function(k) {
-      index_molf <- I[[k]]
+    ##
+    classes_call <- function(index_molf) {
       if (length(index_molf) > 0) {
         NumC <- molecular_formulasMat[index_molf[1], x_c_el]
         sumX <- molecular_formulasMat[index_molf[1], x_h_el] + molecular_formulasMat[index_molf[1], x_br_el] + molecular_formulasMat[index_molf[1], x_cl_el] + molecular_formulasMat[index_molf[1], x_f_el] + molecular_formulasMat[index_molf[1], x_i_el]
@@ -188,70 +186,77 @@ detect_formula_sets  <- function(molecular_formulas, ratio_delta_HBrClFI_C = 2, 
     }
   }
   ##
-  classes_formula_matrix_call <- function(k) {
+  classes_formula_matrix_call <- function(i) {
     A <- NULL
-    L_C <- length(classes[[k]])
+    L_C <- length(i)
     if (L_C < MNC) {
-      A <- matrix(c(classes[[k]], rep("", (MNC - L_C))), ncol = MNC)
+      A <- matrix(c(i, rep("", (MNC - L_C))), ncol = MNC)
     } else {
-      A <- matrix(classes[[k]][1:MNC], ncol = MNC)
+      A <- matrix(i[1:MNC], ncol = MNC)
     }
     A
   }
   ##
   if (number_processing_threads == 1) {
     ##
-    I <-  lapply(1:length(unique_molecular_formulas1), function(k) {
-      I_call(k)
+    I <-  lapply(unique_molecular_formulas1, function(i) {
+      I_call(i)
     })
     I <- unlist(I, recursive = FALSE)
     ##
     if (length(I) > 0) {
-      classes <-  lapply(1:length(I), function(k) {
-        classes_call(k)
+      classes <-  lapply(I, function(index_molf) {
+        classes_call(index_molf)
       })
       ##
-      classes_formula_matrix <- do.call(rbind, lapply(1:length(classes), function(k) {
-        classes_formula_matrix_call(k)
+      classes_formula_matrix <- do.call(rbind, lapply(classes, function(i) {
+        classes_formula_matrix_call(i)
       }))
     }
     ##
   } else {
     if (osType == "Windows") {
-      clust <- makeCluster(number_processing_threads)
-      registerDoParallel(clust)
       ##
-      I <- foreach(k = 1:length(unique_molecular_formulas1), .verbose = FALSE) %dopar% {
-        I_call(k)
-      }
+      clust <- makeCluster(number_processing_threads)
+      clusterExport(clust, setdiff(ls(), c("clust", "unique_molecular_formulas1")), envir = environment())
+      I <-  parLapply(clust, unique_molecular_formulas1, function(i) {
+        I_call(i)
+      })
+      stopCluster(clust)
+      ##
       I <- unlist(I, recursive = FALSE)
       ##
       if (length(I) > 0) {
-        classes <- foreach(k = 1:length(I), .verbose = FALSE) %dopar% {
-          classes_call(k)
-        }
         ##
-        classes_formula_matrix <- foreach(k = 1:length(classes), .combine = 'rbind', .verbose = FALSE) %dopar% {
-          classes_formula_matrix_call(k)
-        }
+        clust <- makeCluster(number_processing_threads)
+        clusterExport(clust, setdiff(ls(), c("clust", "I")), envir = environment())
+        classes <-  parLapply(clust, I, function(index_molf) {
+          classes_call(index_molf)
+        })
+        stopCluster(clust)
+        ##
+        clust <- makeCluster(number_processing_threads)
+        clusterExport(clust, c("MNC"), envir = environment())
+        classes_formula_matrix <- do.call(rbind, parLapply(clust, classes, function(i) {
+          classes_formula_matrix_call(i)
+        }))
+        stopCluster(clust)
       }
       ##
-      stopCluster(clust)
+    } else {
       ##
-    } else if (osType == "Linux") {
-      ##
-      I <-  mclapply(1:length(unique_molecular_formulas1), function(k) {
-        I_call(k)
+      I <-  mclapply(unique_molecular_formulas1, function(i) {
+        I_call(i)
       }, mc.cores = number_processing_threads)
       I <- unlist(I, recursive = FALSE)
       ##
       if (length(I) > 0) {
-        classes <-  mclapply(1:length(I), function(k) {
-          classes_call(k)
+        classes <-  mclapply(I, function(index_molf) {
+          classes_call(index_molf)
         }, mc.cores = number_processing_threads)
         ##
-        classes_formula_matrix <- do.call(rbind, mclapply(1:length(classes), function(k) {
-          classes_formula_matrix_call(k)
+        classes_formula_matrix <- do.call(rbind, mclapply(classes, function(i) {
+          classes_formula_matrix_call(i)
         }, mc.cores = number_processing_threads))
       }
       ##

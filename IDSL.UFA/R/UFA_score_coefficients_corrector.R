@@ -52,16 +52,17 @@ UFA_score_coefficients_corrector <- function(input_annotated_molf_address, outpu
     osType <- Sys.info()[['sysname']]
     ##
     if (osType == "Windows") {
-      clust <- makeCluster(number_processing_threads)
-      registerDoParallel(clust)
       ##
-      null_var <- foreach(i = 1:length(file_names), .combine = 'rbind', .verbose = FALSE) %dopar% {
+      clust <- makeCluster(number_processing_threads)
+      clusterExport(clust, setdiff(ls(), c("clust")), envir = environment())
+      ##
+      null_var <- do.call(rbind, parLapply(clust, 1:length(file_names), function(i) {
         call_UFA_score_coefficients_corrector(i)
-      }
+      }))
       ##
       stopCluster(clust)
       ##
-    } else if (osType == "Linux") {
+    } else {
       ##
       null_var <- do.call(rbind, mclapply(1:length(file_names), function(i) {
         call_UFA_score_coefficients_corrector(i)

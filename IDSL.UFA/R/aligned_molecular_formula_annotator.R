@@ -55,6 +55,8 @@ aligned_molecular_formula_annotator <- function(PARAM) {
   ##
   ##############################################################################
   ##
+  IPA_logRecorder("Initiated matching peak IDs!")
+  ##
   call_MF_Zcol <- function(i) {
     peak_table_id <- peakXcol[, (i + 3)]
     MolecularFormulaAnnotationTable <- IDSL.IPA::loadRdata(paste0(output_path_annotated_mf_tables, "/", mf_table_list[i]))
@@ -75,9 +77,80 @@ aligned_molecular_formula_annotator <- function(PARAM) {
   ##
   ##############################################################################
   ##
+  if (number_processing_threads == 1) {
+    ##
+    progressBARboundaries <- txtProgressBar(min = 0, max = Lsamples, initial = 0, style = 3)
+    ##
+    MF_Zcol <- do.call(rbind, lapply(seqSample, function(i) {
+      setTxtProgressBar(progressBARboundaries, i)
+      ##
+      call_MF_Zcol(i)
+    }))
+    ##
+    close(progressBARboundaries)
+    ##
+    ############################################################################
+    ##
+  } else {
+    ##
+    osType <- Sys.info()[['sysname']]
+    ##
+    ############################################################################
+    ##
+    if (osType == "Windows") {
+      ####
+      clust <- makeCluster(number_processing_threads)
+      clusterExport(clust, setdiff(ls(), c("clust", "seqSample")), envir = environment())
+      ##
+      MF_Zcol <- do.call(rbind, parLapply(clust, seqSample, function(i) {
+        call_MF_Zcol(i)
+      }))
+      ##
+      stopCluster(clust)
+      ##
+      ############################################################################
+      ##
+    } else {
+      ##
+      MF_Zcol <- do.call(rbind, mclapply(seqSample, function(i) {
+        call_MF_Zcol(i)
+      }, mc.cores = number_processing_threads))
+      ##
+      closeAllConnections()
+      ##
+    }
+  }
+  ##
+  ############################################################################
+  ##
+  call_MF_Zcol <- NULL
+  ##
+  IPA_logRecorder("Completed matching peak IDs!")
+  ##
+  ##############################################################################
+  ##
+  MF_Zcol <- data.frame(MF_Zcol)
+  colnames(MF_Zcol) <- c("XID", "Rank", "MolecularFormula")
+  MF_Zcol$XID <- as.numeric(MF_Zcol$XID)
+  MF_Zcol$Rank <- as.numeric(MF_Zcol$Rank)
+  MF_Zcol <- MF_Zcol[order(MF_Zcol[, 1], decreasing = FALSE), ]
+  rownames(MF_Zcol) <- NULL
+  xDiff <- which(diff(MF_Zcol[, 1]) > 0)
+  ##
+  xZcol <- matrix(rep(0, 2*L_peaks), ncol = 2)
+  ##
+  u_peakid <- unique(MF_Zcol[, 1])
+  xZcol[u_peakid, 1] <- c(1, (xDiff + 1))
+  xZcol[u_peakid, 2] <- c(xDiff, dim(MF_Zcol)[1])
+  ##
+  ##############################################################################
+  ##
+  IPA_logRecorder("Initiated calculating median ranks!")
+  ##
   repNA00Ncandidate <- rep(c(NA, 0, 0), Ncandidate)
   ##
   call_calculating_median_ranks <- function(i) {
+    ##
     molecularFormulaFreqRank <- repNA00Ncandidate
     ##
     if (xZcol[i, 1] != 0) {
@@ -115,125 +188,56 @@ aligned_molecular_formula_annotator <- function(PARAM) {
   ##
   if (number_processing_threads == 1) {
     ##
-    IPA_logRecorder("Initiated matching peak IDs!")
-    progressBARboundaries <- txtProgressBar(min = 0, max = Lsamples, initial = 0, style = 3)
-    #
-    MF_Zcol <- do.call(rbind, lapply(seqSample, function(i) {
-      setTxtProgressBar(progressBARboundaries, i)
-      ##
-      call_MF_Zcol(i)
-    }))
-    close(progressBARboundaries)
-    #
-    MF_Zcol <- data.frame(MF_Zcol)
-    colnames(MF_Zcol) <- c("XID", "Rank", "MolecularFormula")
-    MF_Zcol$XID <- as.numeric(MF_Zcol$XID)
-    MF_Zcol$Rank <- as.numeric(MF_Zcol$Rank)
-    MF_Zcol <- MF_Zcol[order(MF_Zcol[, 1], decreasing = FALSE), ]
-    rownames(MF_Zcol) <- NULL
-    xDiff <- which(diff(MF_Zcol[, 1]) > 0)
-    #
-    xZcol <- matrix(rep(0, 2*L_peaks), ncol = 2)
-    #
-    u_peakid <- unique(MF_Zcol[, 1])
-    xZcol[u_peakid, 1] <- c(1, (xDiff + 1))
-    xZcol[u_peakid, 2] <- c(xDiff, dim(MF_Zcol)[1])
-    #
-    IPA_logRecorder("Completed matching peak IDs!")
-    ##
-    IPA_logRecorder("Initiated calculating median ranks!")
     progressBARboundaries <- txtProgressBar(min = 0, max = L_peaks, initial = 0, style = 3)
-    #
+    ##
     aligned_molecular_formula <- do.call(rbind, lapply(1:L_peaks, function(i) {
       setTxtProgressBar(progressBARboundaries, i)
       ##
       call_calculating_median_ranks(i)
     }))
-    MF_Zcol <- NULL
+    ##
     close(progressBARboundaries)
-    IPA_logRecorder("Completed calculating median ranks!")
     ##
-    title_mat <- do.call(c, lapply(1:Ncandidate, function(i) {
-      c(paste0("IonFormula_", i), paste0("Frequency_", i), paste0("MedianRank_", i))
-    }))
+    ############################################################################
+    ##
   } else {
-    osType <- Sys.info()[['sysname']]
     ##
-    if (osType == "Linux") {
+    ############################################################################
+    ##
+    if (osType == "Windows") {
+      ####
+      clust <- makeCluster(number_processing_threads)
+      clusterExport(clust, setdiff(ls(), c("clust", "peakXcol", "L_peaks", "seqSample")), envir = environment())
       ##
-      IPA_logRecorder("Initiated matching peak IDs!")
-      MF_Zcol <- do.call(rbind, mclapply(seqSample, function(i) {
-        call_MF_Zcol(i)
-      }, mc.cores = number_processing_threads))
-      #
-      MF_Zcol <- data.frame(MF_Zcol)
-      colnames(MF_Zcol) <- c("XID", "Rank", "MolecularFormula")
-      MF_Zcol$XID <- as.numeric(MF_Zcol$XID)
-      MF_Zcol$Rank <- as.numeric(MF_Zcol$Rank)
-      MF_Zcol <- MF_Zcol[order(MF_Zcol[, 1], decreasing = FALSE), ]
-      rownames(MF_Zcol) <- NULL
-      xDiff <- which(diff(MF_Zcol[, 1]) > 0)
-      #
-      xZcol <- matrix(rep(0, 2*L_peaks), ncol = 2)
-      #
-      u_peakid <- unique(MF_Zcol[, 1])
-      xZcol[u_peakid, 1] <- c(1, (xDiff + 1))
-      xZcol[u_peakid, 2] <- c(xDiff, dim(MF_Zcol)[1])
-      #
-      IPA_logRecorder("Completed matching peak IDs!")
+      aligned_molecular_formula <- do.call(rbind, parLapply(clust, 1:L_peaks, function(i) {
+        call_calculating_median_ranks(i)
+      }))
       ##
-      IPA_logRecorder("Initiated calculating median ranks!")
+      stopCluster(clust)
+      ##
+      ##########################################################################
+      ##
+    } else {
+      ##
       aligned_molecular_formula <- do.call(rbind, mclapply(1:L_peaks, function(i) {
         call_calculating_median_ranks(i)
-      }, mc.cores = number_processing_threads))
-      MF_Zcol <- NULL
-      IPA_logRecorder("Completed calculating median ranks!")
-      ##
-      title_mat <- do.call(c, mclapply(1:Ncandidate, function(i) {
-        c(paste0("IonFormula_", i), paste0("Frequency_", i), paste0("MedianRank_", i))
       }, mc.cores = number_processing_threads))
       ##
       closeAllConnections()
       ##
-    } else if (osType == "Windows") {
-      clust <- makeCluster(number_processing_threads)
-      registerDoParallel(clust)
-      ##
-      IPA_logRecorder("Initiated matching peak IDs!")
-      MF_Zcol <- foreach(i = seqSample, .combine = 'rbind', .verbose = FALSE) %dopar% {
-        call_MF_Zcol(i)
-      }
-      #
-      MF_Zcol <- data.frame(MF_Zcol)
-      colnames(MF_Zcol) <- c("XID", "Rank", "MolecularFormula")
-      MF_Zcol$XID <- as.numeric(MF_Zcol$XID)
-      MF_Zcol$Rank <- as.numeric(MF_Zcol$Rank)
-      MF_Zcol <- MF_Zcol[order(MF_Zcol[, 1], decreasing = FALSE), ]
-      rownames(MF_Zcol) <- NULL
-      xDiff <- which(diff(MF_Zcol[, 1]) > 0)
-      #
-      xZcol <- matrix(rep(0, 2*L_peaks), ncol = 2)
-      #
-      u_peakid <- unique(MF_Zcol[, 1])
-      xZcol[u_peakid, 1] <- c(1, (xDiff + 1))
-      xZcol[u_peakid, 2] <- c(xDiff, dim(MF_Zcol)[1])
-      #
-      IPA_logRecorder("Completed matching peak IDs!")
-      ##
-      IPA_logRecorder("Initiated calculating median ranks!")
-      aligned_molecular_formula <- foreach(i = 1:L_peaks, .combine = 'rbind', .verbose = FALSE) %dopar% {
-        call_calculating_median_ranks(i)
-      }
-      MF_Zcol <- NULL
-      IPA_logRecorder("Completed calculating median ranks!")
-      ##
-      title_mat <-  foreach(i = 1:Ncandidate, .combine = 'c', .verbose = FALSE) %dopar% {
-        c(paste0("IonFormula_", i), paste0("Frequency_", i), paste0("MedianRank_", i))
-      }
-      ##
-      stopCluster(clust)
     }
   }
+  ##
+  ##############################################################################
+  ##
+  MF_Zcol <- NULL
+  IPA_logRecorder("Completed calculating median ranks!")
+  ##
+  title_mat <- do.call(c, lapply(1:Ncandidate, function(i) {
+    c(paste0("IonFormula_", i), paste0("Frequency_", i), paste0("MedianRank_", i))
+  }))
+  ##
+  ##############################################################################
   ##
   medianPeakHeight <- IDSL.IPA::loadRdata(paste0(peak_alignment_folder, "/peak_height.Rdata"))[, 4:5]
   medianPeakArea <- IDSL.IPA::loadRdata(paste0(peak_alignment_folder, "/peak_area.Rdata"))[, 4]

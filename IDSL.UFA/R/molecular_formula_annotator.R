@@ -222,7 +222,7 @@ molecular_formula_annotator <- function(IPDB, spectraList, peaklist, selectedIPA
                   text(x = lablelSpectra[, 1], y = lablelSpectra[, 2], cex = 1.25, label = lablelSpectra[, 1])
                   text(x = (IsotopicProfile[1, 1] + IsotopicProfile[IPsize, 1])/2, y = 110, cex = 1.4, label = paste0("[", molecularFormulaIDj, "]", msPolarity))
                   ##
-                  mtext(HRMSfileName, side = 3, adj = 0, line = 0.25, cex = 1.2)
+                  mtext(HRMSfileName, side = 3, adj = 0, line = 0.25, cex = 1.0)
                   mtext("m/z", side = 1, adj = 0.5, line = 2, cex = 1.35)
                   mtext("Intensity (%)", side = 2, adj = 0.5, line = 0.25, cex = 1.35)
                   mtext(text = paste0("+/- ", massAccuracy, " Da"), side = 3, adj = 1, line = 0.25, cex = 1.0)
@@ -266,7 +266,20 @@ molecular_formula_annotator <- function(IPDB, spectraList, peaklist, selectedIPA
       ##
       ##########################################################################
       ##
-      if (osType == "Linux") {
+      if (osType == "Windows") {
+        ##
+        clust <- makeCluster(number_processing_threads)
+        clusterExport(clust, setdiff(ls(), c("clust", "selectedIPApeaks")), envir = environment())
+        ##
+        MolecularFormulaAnnotationTable <- do.call(rbind, parLapply(clust, selectedIPApeaks, function(i) {
+          call_molecular_formula_annotator(i)
+        }))
+        ##
+        stopCluster(clust)
+        ##
+        ########################################################################
+        ##
+      } else {
         MolecularFormulaAnnotationTable <- do.call(rbind, mclapply(selectedIPApeaks, function(i) {
           call_molecular_formula_annotator(i)
         }, mc.cores = number_processing_threads))
@@ -274,16 +287,6 @@ molecular_formula_annotator <- function(IPDB, spectraList, peaklist, selectedIPA
         closeAllConnections()
         ##
         ########################################################################
-        ##
-      } else if (osType == "Windows") {
-        clust <- makeCluster(number_processing_threads)
-        registerDoParallel(clust)
-        ##
-        MolecularFormulaAnnotationTable <- foreach(i = selectedIPApeaks, .combine = 'rbind', .verbose = FALSE) %dopar% {
-          call_molecular_formula_annotator(i)
-        }
-        ##
-        stopCluster(clust)
         ##
       }
     }

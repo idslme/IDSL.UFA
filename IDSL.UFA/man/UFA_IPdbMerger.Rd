@@ -7,7 +7,7 @@ UFA IPDB Merger
 To merge multiple IPDBs into one IPDB
 }
 \usage{
-UFA_IPdbMerger(path = getwd(), vecIPDB)
+UFA_IPdbMerger(path, vecIPDB)
 }
 \arguments{
   \item{path}{

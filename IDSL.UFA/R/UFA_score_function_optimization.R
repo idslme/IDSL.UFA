@@ -7,7 +7,8 @@ UFA_score_function_optimization <- function(PARAM_ScoreFunc) {
   input_path <- PARAM_ScoreFunc[which(PARAM_ScoreFunc[, 1] == 'SFT0005'), 2]
   excelfile_address <- PARAM_ScoreFunc[which(PARAM_ScoreFunc[, 1] == 'SFT0006'), 2]
   output_path <- PARAM_ScoreFunc[which(PARAM_ScoreFunc[, 1] == 'SFT0008'), 2]
-  .GlobalEnv$.logIPA <- paste0(output_path, "/logUFA_score_function_optimization.txt")
+  .logIPA <- NULL
+  .logIPA <<- paste0(output_path, "/logUFA_score_function_optimization.txt")
   IPA_logRecorder(paste0(rep("", 100), collapse = "="))
   IPA_logRecorder("Type <<< citation('IDSL.UFA') >>> for citing this R package in publications.")
   IPA_logRecorder(paste0("mzML/mzXML/netCDF:  ", input_path))
@@ -16,9 +17,9 @@ UFA_score_function_optimization <- function(PARAM_ScoreFunc) {
   IPA_logRecorder(paste0(rep("", 100), collapse = "-"))
   IPA_logRecorder("Initiated score function optimization workflow!")
   IPA_logRecorder(paste0(as.character(initiation_time), " ", timeZone))
-  IPA_logRecorder("", printMessage = FALSE)
-  IPA_logRecorder("", printMessage = FALSE)
-  IPA_logRecorder(paste0(PARAM_ScoreFunc[, 1], "\t", PARAM_ScoreFunc[, 2]),  printMessage = FALSE)
+  IPA_logRecorder("", allowedPrinting = FALSE)
+  IPA_logRecorder("", allowedPrinting = FALSE)
+  IPA_logRecorder(paste0(PARAM_ScoreFunc[, 1], "\t", PARAM_ScoreFunc[, 2]),  allowedPrinting = FALSE)
   IPA_logRecorder(paste0(rep("", 100), collapse = "-"))
   ##
   ##############################################################################
@@ -44,11 +45,11 @@ UFA_score_function_optimization <- function(PARAM_ScoreFunc) {
   IPA_logRecorder(paste0(rep("", 100), collapse = "-"))
   required_time <- completion_time - initiation_time
   IPA_logRecorder(paste0("The required processing time was `", required_time, " ", attributes(required_time)$units, "`"))
-  IPA_logRecorder(paste0(as.character(completion_time), " ", timeZone), printMessage = FALSE)
-  IPA_logRecorder("", printMessage = FALSE)
-  IPA_logRecorder("", printMessage = FALSE)
+  IPA_logRecorder(paste0(as.character(completion_time), " ", timeZone), allowedPrinting = FALSE)
+  IPA_logRecorder("", allowedPrinting = FALSE)
+  IPA_logRecorder("", allowedPrinting = FALSE)
   IPA_logRecorder("Completed score coefficients optimization workflow!")
-  IPA_logRecorder(paste0(rep("", 100), collapse = "="), printMessage = FALSE)
+  IPA_logRecorder(paste0(rep("", 100), collapse = "="), allowedPrinting = FALSE)
   ##
   ##############################################################################
   ##

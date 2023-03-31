@@ -9,16 +9,17 @@ UFA_enumerated_chemical_space <- function(PARAM_ECS) {
   ## To create log record for IDSL.UFA
   initiation_time <- Sys.time()
   timeZone <- tryCatch(Sys.timezone(), warning = function(w) {"UTC"}, error = function(e) {"UTC"})
-  .GlobalEnv$.logIPA <- paste0(output_path, "/logIPDB_", IPDB_file_name, ".txt")
+  .logIPA <- NULL
+  .logIPA <<- paste0(output_path, "/logIPDB_", IPDB_file_name, ".txt")
   IPA_logRecorder(paste0(rep("", 100), collapse = "="))
   IPA_logRecorder("Type <<< citation('IDSL.UFA') >>> for citing this R package in publications.")
   IPA_logRecorder(paste0("OUTPUT:  ", output_path))
   IPA_logRecorder(paste0(rep("", 100), collapse = "-"))
   IPA_logRecorder("Initiated isotopic profile database (IPDB) production through the enumerating chemical space approach!")
   IPA_logRecorder(paste0(as.character(initiation_time), " ", timeZone))
-  IPA_logRecorder("", printMessage = FALSE)
-  IPA_logRecorder("", printMessage = FALSE)
-  IPA_logRecorder(paste0(PARAM_ECS$`Parameter`, "\t", PARAM_ECS$`User input 1`, "\t", PARAM_ECS$`User input 2`),  printMessage = FALSE)
+  IPA_logRecorder("", allowedPrinting = FALSE)
+  IPA_logRecorder("", allowedPrinting = FALSE)
+  IPA_logRecorder(paste0(PARAM_ECS$`Parameter`, "\t", PARAM_ECS$`User input 1`, "\t", PARAM_ECS$`User input 2`),  allowedPrinting = FALSE)
   IPA_logRecorder(paste0(rep("", 100), collapse = "-"))
   ##
   ##############################################################################
@@ -147,8 +148,7 @@ UFA_enumerated_chemical_space <- function(PARAM_ECS) {
   EL_ESSE <- element_sorter(ElementList = EssentiaLElements, alphabeticalOrder = FALSE)
   EssentiaLElements_mass_abundance <- EL_ESSE[["massAbundanceList"]]
   ##############################################################################
-  Ess_IPDB_mat_call <- function(counter) {
-    IPP <- Ess_IP[[counter]]
+  Ess_IPDB_mat_call <- function(IPP) {
     x100 <- which.max(IPP[, 2])
     L_IPP <- length(IPP[, 2])
     ##
@@ -369,8 +369,8 @@ UFA_enumerated_chemical_space <- function(PARAM_ECS) {
       Ess_IP_call(counter)
     })
     ##
-    Ess_IPDB_mat <- do.call(rbind, lapply(1:L_Ess_MolVecMat, function(counter) {
-      Ess_IPDB_mat_call(counter)
+    Ess_IPDB_mat <- do.call(rbind, lapply(Ess_IP, function(IPP) {
+      Ess_IPDB_mat_call(IPP)
     }))
     #
     x_Ess_IP <- which(Ess_IPDB_mat[, 1] <= HIGHEST_mass)
@@ -381,7 +381,7 @@ UFA_enumerated_chemical_space <- function(PARAM_ECS) {
     L_Ess_MolVecMat <- length(x_Ess_IP)
     IPA_logRecorder(paste0("Completed calculating isotopic profiles for essential elements with `", L_Ess_MolVecMat, "` combinations!"))
     ##
-    IPA_logRecorder("Initiated enumerating molecular formulas!")
+    IPA_logRecorder("Initiated enumerating molecular formulas to measure the required enumeration time!")
     MolVecMat <- do.call(rbind, lapply(1:L_Ess_MolVecMat, function(counter) {
       MolVecMat_call(counter)
     }))
@@ -404,34 +404,80 @@ UFA_enumerated_chemical_space <- function(PARAM_ECS) {
       ##
       NoNEss_mass <- rep(0, L_MolVecMat)
     }
-    NonEssentialMassAbundanceList <- NULL
-    molecularFormulaMatrixElementSorterList <- NULL
-    MoleFormNonEssMat <- NULL
-    ##
-    x_mass <- which(NoNEss_mass <= (HIGHEST_mass - 12*c_xyz1)) # which greater than one carbon atom mass
-    L_NoNEss_mass <- length(x_mass)
-    if (L_NoNEss_mass < L_MolVecMat) {
-      NoNEss_mass <- NoNEss_mass[x_mass]
-      MolVecMat <- matrix(MolVecMat[x_mass, ], ncol = LElementsAlphabetical_1)
-      L_MolVecMat <- dim(MolVecMat)[1]
-    }
-    IPA_logRecorder(paste0("Completed calculating masses for `", L_NoNEss_mass, "` molecular formula combinations!"))
-    ##
-    IPA_logRecorder("Initiated creating the isotopic profile database!")
-    x_IP <- c(0, which(abs(diff(MolVecMat[, LElementsAlphabetical_1])) > 0), L_MolVecMat)
-    #
-    L_IP_combination <- length(x_IP) - 1
-    ID_IP <- do.call(rbind, lapply(2:(L_IP_combination + 1), function(counter) {
-      row_number_first <- (x_IP[counter - 1] + 1)
-      c(row_number_first, x_IP[counter], MolVecMat[row_number_first, LElementsAlphabetical_1])
-    }))
     ##
   } else {
     osType <- Sys.info()[['sysname']]
     ##
     ############################################################################
     ##
-    if (osType == "Linux") {
+    if (osType == "Windows") {
+      ##
+      clust <- makeCluster(number_processing_threads)
+      clusterExport(clust, setdiff(ls(), c("clust")), envir = environment())
+      Ess_MolVecMat <- do.call(rbind, parLapply(clust, c_xyz1:c_xyz2, function(c) {
+        Ess_MolVecMat_call(c)
+      }))
+      stopCluster(clust)
+      ##
+      Ess_MolVecMat <- matrix(Ess_MolVecMat, ncol = L_EssentiaLElements)
+      L_Ess_MolVecMat <- dim(Ess_MolVecMat)[1]
+      ##
+      clust <- makeCluster(number_processing_threads)
+      clusterExport(clust, c("Ess_IP_call", "Ess_MolVecMat", "EssentiaLElements_mass_abundance", "peak_spacing", "UFA_IP_memeory_variables"), envir = environment())
+      Ess_IP <- parLapply(clust, 1:L_Ess_MolVecMat, function(counter) {
+        Ess_IP_call(counter)
+      })
+      stopCluster(clust)
+      ##
+      clust <- makeCluster(number_processing_threads)
+      clusterExport(clust, "Ess_IPDB_mat_call", envir = environment())
+      Ess_IPDB_mat <- do.call(rbind, parLapply(clust, Ess_IP, function(IPP) {
+        Ess_IPDB_mat_call(IPP)
+      }))
+      stopCluster(clust)
+      ##
+      x_Ess_IP <- which(Ess_IPDB_mat[, 1] <= HIGHEST_mass)
+      Ess_MolVecMat <- matrix(Ess_MolVecMat[x_Ess_IP, ], ncol = L_EssentiaLElements)
+      Ess_IPDB_mat <- matrix(Ess_IPDB_mat[x_Ess_IP, ], ncol = 5)
+      Ess_IPDB_mat <- matrix(Ess_IPDB_mat[, -1], ncol = 4)
+      Ess_IP <- Ess_IP[x_Ess_IP]
+      L_Ess_MolVecMat <- length(x_Ess_IP)
+      IPA_logRecorder(paste0("Completed calculating isotopic profiles for essential elements with `", L_Ess_MolVecMat, "` combinations!"))
+      ##
+      IPA_logRecorder("Initiated enumerating molecular formulas to measure the required enumeration time!")
+      clust <- makeCluster(number_processing_threads)
+      clusterExport(clust, setdiff(ls(), c("clust", "L_Ess_MolVecMat", "Ess_IP", "Ess_IPDB_mat", "EssentiaLElements_mass_abundance")), envir = environment())
+      MolVecMat <- do.call(rbind, parLapply(clust, 1:L_Ess_MolVecMat, function(counter) {
+        MolVecMat_call(counter)
+      }))
+      stopCluster(clust)
+      ##
+      MolVecMat <- matrix(MolVecMat, ncol = LElementsAlphabetical_1)
+      L_MolVecMat <- dim(MolVecMat)[1]
+      ##
+      IPA_logRecorder(paste0("Initiated calculating masses for `", L_MolVecMat, "` enumerated molecular formulas!"))
+      ##
+      MoleFormNonEssMat <- MolVecMat[, c(2, 3, 7, 8, 10, 11, 12, 13)]
+      molecularFormulaMatrixElementSorterList <- molecular_formula_elements_filter(MoleFormNonEssMat, NonEssentiaLElements)
+      MoleFormNonEssMat <- molecularFormulaMatrixElementSorterList[["molecularFormulaMatrix"]]
+      NonEssentialMassAbundanceList <- molecularFormulaMatrixElementSorterList[["elementSorterList"]][["massAbundanceList"]]
+      LNonEssentialElements <- length(NonEssentialMassAbundanceList)
+      if (LNonEssentialElements > 0) {
+        ##
+        clust <- makeCluster(number_processing_threads)
+        clusterExport(clust, c("MoleFormNonEssMat", "NonEssentialMassAbundanceList", "LNonEssentialElements"), envir = environment())
+        NoNEss_mass <- do.call('c', parLapply(clust, 1:L_MolVecMat, function(counter) {
+          monoisotopicMassCalculator(MoleFormNonEssMat[counter, ], NonEssentialMassAbundanceList, LNonEssentialElements)
+        }))
+        stopCluster(clust)
+      } else {
+        ##
+        NoNEss_mass <- rep(0, L_MolVecMat)
+      }
+      ##
+      ##########################################################################
+      ##
+    } else {
       ##
       Ess_MolVecMat <- do.call(rbind, mclapply(c_xyz1:c_xyz2, function(c) {
         Ess_MolVecMat_call(c)
@@ -443,8 +489,8 @@ UFA_enumerated_chemical_space <- function(PARAM_ECS) {
         Ess_IP_call(counter)
       }, mc.cores = number_processing_threads)
       ##
-      Ess_IPDB_mat <- do.call(rbind, mclapply(1:L_Ess_MolVecMat, function(counter) {
-        Ess_IPDB_mat_call(counter)
+      Ess_IPDB_mat <- do.call(rbind, mclapply(Ess_IP, function(IPP) {
+        Ess_IPDB_mat_call(IPP)
       }, mc.cores = number_processing_threads))
       #
       x_Ess_IP <- which(Ess_IPDB_mat[, 1] <= HIGHEST_mass)
@@ -455,7 +501,7 @@ UFA_enumerated_chemical_space <- function(PARAM_ECS) {
       L_Ess_MolVecMat <- length(x_Ess_IP)
       IPA_logRecorder(paste0("Completed calculating isotopic profiles for essential elements with `", L_Ess_MolVecMat, "` combinations!"))
       ##
-      IPA_logRecorder("Initiated enumerating molecular formulas!")
+      IPA_logRecorder("Initiated enumerating molecular formulas to measure the required enumeration time!")
       MolVecMat <- do.call(rbind, mclapply(1:L_Ess_MolVecMat, function(counter) {
         MolVecMat_call(counter)
       }, mc.cores = number_processing_threads))
@@ -478,112 +524,39 @@ UFA_enumerated_chemical_space <- function(PARAM_ECS) {
         ##
         NoNEss_mass <- rep(0, L_MolVecMat)
       }
-      NonEssentialMassAbundanceList <- NULL
-      molecularFormulaMatrixElementSorterList <- NULL
-      MoleFormNonEssMat <- NULL
-      ##
-      x_mass <- which(NoNEss_mass <= (HIGHEST_mass - 12*c_xyz1)) # which greater than one carbon atom mass
-      L_NoNEss_mass <- length(x_mass)
-      if (L_NoNEss_mass < L_MolVecMat) {
-        NoNEss_mass <- NoNEss_mass[x_mass]
-        MolVecMat <- matrix(MolVecMat[x_mass, ], ncol = LElementsAlphabetical_1)
-        L_MolVecMat <- dim(MolVecMat)[1]
-      }
-      IPA_logRecorder(paste0("Completed calculating masses for `", L_NoNEss_mass, "` molecular formula combinations!"))
-      ##
-      IPA_logRecorder("Initiated creating the isotopic profile database!")
-      x_IP <- c(0, which(abs(diff(MolVecMat[, LElementsAlphabetical_1])) > 0), L_MolVecMat)
-      #
-      L_IP_combination <- length(x_IP) - 1
-      ID_IP <- do.call(rbind, mclapply(2:(L_IP_combination + 1), function(counter) {
-        row_number_first <- (x_IP[counter - 1] + 1)
-        c(row_number_first, x_IP[counter], MolVecMat[row_number_first, LElementsAlphabetical_1])
-      }, mc.cores = number_processing_threads))
       ##
       closeAllConnections()
-      ##
-      ##########################################################################
-      ##
-    } else if (osType == "Windows") {
-      ##
-      clust <- makeCluster(number_processing_threads)
-      registerDoParallel(clust)
-      ##
-      Ess_MolVecMat <- foreach(c = c_xyz1:c_xyz2, .combine = 'rbind', .verbose = FALSE) %dopar% {
-        Ess_MolVecMat_call(c)
-      }
-      Ess_MolVecMat <- matrix(Ess_MolVecMat, ncol = L_EssentiaLElements)
-      L_Ess_MolVecMat <- dim(Ess_MolVecMat)[1]
-      ##
-      Ess_IP <- foreach(counter = 1:L_Ess_MolVecMat, .verbose = FALSE) %dopar% {
-        Ess_IP_call(counter)
-      }
-      ##
-      Ess_IPDB_mat <- foreach(counter = 1:L_Ess_MolVecMat, .combine = 'rbind', .verbose = FALSE) %dopar% {
-        Ess_IPDB_mat_call(counter)
-      }
-      #
-      x_Ess_IP <- which(Ess_IPDB_mat[, 1] <= HIGHEST_mass)
-      Ess_MolVecMat <- matrix(Ess_MolVecMat[x_Ess_IP, ], ncol = L_EssentiaLElements)
-      Ess_IPDB_mat <- matrix(Ess_IPDB_mat[x_Ess_IP, ], ncol = 5)
-      Ess_IPDB_mat <- matrix(Ess_IPDB_mat[, -1], ncol = 4)
-      Ess_IP <- Ess_IP[x_Ess_IP]
-      L_Ess_MolVecMat <- length(x_Ess_IP)
-      IPA_logRecorder(paste0("Completed calculating isotopic profiles for essential elements with `", L_Ess_MolVecMat, "` combinations!"))
-      ##
-      IPA_logRecorder("Initiated enumerating molecular formulas!")
-      MolVecMat <- foreach(counter = 1:L_Ess_MolVecMat, .combine = 'rbind', .verbose = FALSE) %dopar% {
-        MolVecMat_call(counter)
-      }
-      MolVecMat <- matrix(MolVecMat, ncol = LElementsAlphabetical_1)
-      L_MolVecMat <- dim(MolVecMat)[1]
-      ##
-      IPA_logRecorder(paste0("Initiated calculating masses for `", L_MolVecMat, "` enumerated molecular formulas!"))
-      ##
-      MoleFormNonEssMat <- MolVecMat[, c(2, 3, 7, 8, 10, 11, 12, 13)]
-      molecularFormulaMatrixElementSorterList <- molecular_formula_elements_filter(MoleFormNonEssMat, NonEssentiaLElements)
-      MoleFormNonEssMat <- molecularFormulaMatrixElementSorterList[["molecularFormulaMatrix"]]
-      NonEssentialMassAbundanceList <- molecularFormulaMatrixElementSorterList[["elementSorterList"]][["massAbundanceList"]]
-      LNonEssentialElements <- length(NonEssentialMassAbundanceList)
-      if (LNonEssentialElements > 0) {
-        ##
-        NoNEss_mass <- foreach(counter = 1:L_MolVecMat, .combine = 'c', .verbose = FALSE) %dopar% {
-          monoisotopicMassCalculator(MoleFormNonEssMat[counter, ], NonEssentialMassAbundanceList, LNonEssentialElements)
-        }
-      } else {
-        ##
-        NoNEss_mass <- rep(0, L_MolVecMat)
-      }
-      NonEssentialMassAbundanceList <- NULL
-      molecularFormulaMatrixElementSorterList <- NULL
-      MoleFormNonEssMat <- NULL
-      ##
-      x_mass <- which(NoNEss_mass <= (HIGHEST_mass - 12*c_xyz1)) # which greater than one carbon atom mass
-      L_NoNEss_mass <- length(x_mass)
-      if (L_NoNEss_mass < L_MolVecMat) {
-        NoNEss_mass <- NoNEss_mass[x_mass]
-        MolVecMat <- matrix(MolVecMat[x_mass, ], ncol = LElementsAlphabetical_1)
-        L_MolVecMat <- dim(MolVecMat)[1]
-      }
-      IPA_logRecorder(paste0("Completed calculating masses for `", L_NoNEss_mass, "` molecular formula combinations!"))
-      ##
-      IPA_logRecorder("Initiated creating the isotopic profile database!")
-      x_IP <- c(0, which(diff(MolVecMat[, LElementsAlphabetical_1]) > 0), L_MolVecMat)
-      #
-      L_IP_combination <- length(x_IP) - 1
-      ID_IP <- foreach(counter = 2:(L_IP_combination + 1), .combine = 'rbind', .verbose = FALSE) %dopar% {
-        row_number_first <- (x_IP[counter - 1] + 1)
-        c(row_number_first, x_IP[counter], MolVecMat[row_number_first, LElementsAlphabetical_1])
-      }
-      ##
-      stopCluster(clust)
       ##
     }
   }
   ##
   ##############################################################################
   ##
+  NonEssentialMassAbundanceList <- NULL
+  molecularFormulaMatrixElementSorterList <- NULL
+  MoleFormNonEssMat <- NULL
+  ##
+  x_mass <- which(NoNEss_mass <= (HIGHEST_mass - 12*c_xyz1)) # which greater than one carbon atom mass
+  L_NoNEss_mass <- length(x_mass)
+  if (L_NoNEss_mass < L_MolVecMat) {
+    NoNEss_mass <- NoNEss_mass[x_mass]
+    MolVecMat <- matrix(MolVecMat[x_mass, ], ncol = LElementsAlphabetical_1)
+    L_MolVecMat <- dim(MolVecMat)[1]
+  }
+  IPA_logRecorder(paste0("Completed calculating masses for `", L_NoNEss_mass, "` molecular formula combinations!"))
+  ##
+  IPA_logRecorder("Initiated creating the isotopic profile database!")
+  x_IP <- c(0, which(abs(diff(MolVecMat[, LElementsAlphabetical_1])) > 0), L_MolVecMat)
+  #
+  L_IP_combination <- length(x_IP) - 1
+  ID_IP <- do.call(rbind, lapply(2:(L_IP_combination + 1), function(counter) {
+    row_number_first <- (x_IP[counter - 1] + 1)
+    c(row_number_first, x_IP[counter], MolVecMat[row_number_first, LElementsAlphabetical_1])
+  }))
+  ##
   MolVecMat <- matrix(MolVecMat[, -LElementsAlphabetical_1], ncol = LElementsAlphabetical)
+  ##
+  ##############################################################################
   ##
   progressBARboundaries <- txtProgressBar(min = 0, max = L_IP_combination, initial = 0, style = 3)
   ip_export <- lapply(1:L_IP_combination, function(i) {
@@ -675,11 +648,11 @@ UFA_enumerated_chemical_space <- function(PARAM_ECS) {
   IPA_logRecorder(paste0(rep("", 100), collapse = "-"))
   required_time <- completion_time - initiation_time
   IPA_logRecorder(paste0("The required processing time was `", required_time, " ", attributes(required_time)$units, "`"))
-  IPA_logRecorder(paste0(as.character(completion_time), " ", timeZone), printMessage = FALSE)
-  IPA_logRecorder("", printMessage = FALSE)
-  IPA_logRecorder("", printMessage = FALSE)
+  IPA_logRecorder(paste0(as.character(completion_time), " ", timeZone), allowedPrinting = FALSE)
+  IPA_logRecorder("", allowedPrinting = FALSE)
+  IPA_logRecorder("", allowedPrinting = FALSE)
   IPA_logRecorder("Stored isotopic profile database (IPDB) from the enumerating chemical space approach!")
-  IPA_logRecorder(paste0(rep("", 100), collapse = "="), printMessage = FALSE)
+  IPA_logRecorder(paste0(rep("", 100), collapse = "="), allowedPrinting = FALSE)
   ##
   ##############################################################################
   ##

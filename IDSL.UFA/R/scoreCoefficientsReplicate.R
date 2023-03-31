@@ -24,14 +24,14 @@ scoreCoefficientsReplicate <- function(PARAM_ScoreFunc) {
   ##
   inputPathPeaklist <- PARAM_ScoreFunc[which(PARAM_ScoreFunc[, 1] == 'SFT0007'), 2]
   ##
-  peaklistFileNames <- dir(path = inputPathPeaklist, pattern = ".Rdata$")
-  peaklistFileNames <- peaklistFileNames[grep("^peaklist_", peaklistFileNames)]
+  peaklistFileNames <- dir(path = inputPathPeaklist, pattern = ".Rdata$", ignore.case = TRUE)
+  peaklistFileNames <- peaklistFileNames[grep("^peaklist_", peaklistFileNames, ignore.case = TRUE)]
   L_PL <- length(peaklistFileNames)
   ##
   if (LHRMS > L_PL) {
     peaklistHRMSfileNames <- paste0("peaklist_", HRMSfileNames, ".Rdata")
     ndPeaklists <- setdiff(peaklistHRMSfileNames, peaklistFileNames)
-    ndPeaklists <- gsub("^peaklist_|.Rdata$", "", ndPeaklists)
+    ndPeaklists <- gsub("^peaklist_|.Rdata$", "", ndPeaklists, ignore.case = TRUE)
     IPA_logRecorder("Error!!! peaklist files are not available for the following HRMS file(s):")
     for (i in ndPeaklists) {
       IPA_logRecorder(i)
@@ -45,8 +45,6 @@ scoreCoefficientsReplicate <- function(PARAM_ScoreFunc) {
     dir.create(output_path_score_function_calculations, recursive = TRUE)
   }
   opendir(output_path_score_function_calculations)
-  ##
-  IPA_logRecorder("Deconvoluting the reference spreadsheet file!")
   ##
   RTf <- as.numeric(excelfile$'RetentionTime(min)')
   ##
@@ -153,15 +151,15 @@ scoreCoefficientsReplicate <- function(PARAM_ScoreFunc) {
   ##
   if (osType == "Windows") {
     clust <- makeCluster(NPT)
-    registerDoParallel(clust)
+    clusterExport(clust, setdiff(ls(), c("clust", "LMolf")), envir = environment())
     ##
-    MoleFormVecMat <- foreach(i = 1:LMolf, .combine = 'rbind', .verbose = FALSE) %dopar% {
+    MoleFormVecMat <- do.call(rbind, parLapply(clust, 1:LMolf, function(i) {
       call_MoleFormVecMat(i)
-    }
+    }))
     ##
     stopCluster(clust)
     ##
-  } else if (osType == "Linux") {
+  } else {
     ##
     MoleFormVecMat <- do.call(rbind, mclapply(1:LMolf, function(i) {
       call_MoleFormVecMat(i)
@@ -208,23 +206,27 @@ scoreCoefficientsReplicate <- function(PARAM_ScoreFunc) {
   ##
   IPA_logRecorder("Initiated producing the unoptimized list of candidate molecular formulas!")
   if (osType == "Windows") {
-    clust <- makeCluster(NPT)
-    registerDoParallel(clust)
     ##
-    unoptimized_molecular_formula_annotation <- foreach(i = 1:LHRMS, .combine = 'rbind', .verbose = FALSE) %dopar% {
+    clust <- makeCluster(NPT)
+    clusterExport(clust, setdiff(ls(), c("clust", "LHRMS")), envir = environment())
+    ##
+    unoptimized_molecular_formula_annotation <- do.call(rbind, parLapply(clust, 1:LHRMS, function(i) {
       tryCatch(call_scoreCoefficientsReplicate(i),
                error = function(e) {IPA_logRecorder(paste0("Problem with `", HRMSfileNames[i],"`!"))})
-    }
+    }))
     ##
     stopCluster(clust)
     ##
-  } else if (osType == "Linux") {
+    ############################################################################
+    ##
+  } else {
     unoptimized_molecular_formula_annotation <- do.call(rbind, mclapply(1:LHRMS, function(i) {
       tryCatch(call_scoreCoefficientsReplicate(i),
                error = function(e) {IPA_logRecorder(paste0("Problem with `", HRMSfileNames[i],"`!"))})
     }, mc.cores = NPT))
     ##
     closeAllConnections()
+    ##
   }
   ##############################################################################
   counterCompound <- 1

@@ -10,7 +10,7 @@ molecularFormula2IPdb <- function(molecularFormulaDatabase, retentionTime = NULL
   failed_IP_calculator <- function(i) {
     if (allowedVerbose) {
       failedFormula <- hill_molecular_formula_printer(Elements, MoleFormVecMat[i, ], number_processing_threads = 1)
-      IPA_logRecorder(paste0("Failed to calculate isotopic profile for `", failedFormula,"`!"), printMessage = FALSE)
+      IPA_logRecorder(paste0("Failed to calculate isotopic profile for `", failedFormula,"`!"), allowedPrinting = FALSE)
     }
     ##
     return(IsoProfInf100)
@@ -171,27 +171,33 @@ molecularFormula2IPdb <- function(molecularFormulaDatabase, retentionTime = NULL
       ##########################################################################
       ##
       if (osType == "Windows") {
-        clust <- makeCluster(number_processing_threads)
-        registerDoParallel(clust)
         ##
-        MoleFormVecMat <- foreach(i = 1:length(molecularFormulaDatabase), .combine = 'rbind', .verbose = FALSE) %dopar% {
+        clust <- makeCluster(number_processing_threads)
+        clusterExport(clust, setdiff(ls(), c("clust")), envir = environment())
+        ##
+        MoleFormVecMat <- do.call(rbind, parLapply(clust, 1:length(molecularFormulaDatabase), function(i) {
           molf_deconvoluter(i)
-        }
+        }))
         ##
         stopCluster(clust)
         ##
         ########################################################################
         ##
-      } else if (osType == "Linux") {
+      } else {
         ##
         MoleFormVecMat <- do.call(rbind, mclapply(1:length(molecularFormulaDatabase), function(i) {
           molf_deconvoluter(i)
         }, mc.cores = number_processing_threads))
         ##
+        closeAllConnections()
+        ##
         ########################################################################
         ##
       }
     }
+    ##
+    molecularFormulaDatabase <- NULL
+    ##
     if (allowedVerbose) {IPA_logRecorder("Completed deconvoluting molecular formulas!")}
     ##
     if (is.null(MoleFormVecMat)) {
@@ -289,33 +295,39 @@ molecularFormula2IPdb <- function(molecularFormulaDatabase, retentionTime = NULL
     ############################################################################
     ##
     if (osType == "Windows") {
-      clust <- makeCluster(number_processing_threads)
-      registerDoParallel(clust)
       ##
-      if (allowedVerbose) {IPA_logRecorder("Initiated calculating isotopic profiles!")}
-      IsotopicProfileList <- tryCatch(foreach(i = 1:nMoleFormVecMat, .verbose = FALSE) %dopar% {
-        IP_calculator(i)
-      }, warning = function(w) {stop("Isotopic profile calculations ran out of memory! Update parameter `FS0009` or apply a brute-force method `FS0005`!")})
-      if (allowedVerbose) {IPA_logRecorder("Completed calculating isotopic profiles!")}
+      ##########################################################################
       ##
-      if (allowedVerbose) {IPA_logRecorder("Initiated calculating the database parameters!")}
-      parametersIPDB <- foreach(i = 1:nMoleFormVecMat, .combine = 'rbind', .verbose = FALSE) %dopar% {
-        parametersIPDBcalculator(i)
+      if (!allowedMustRunCalculation) {
+        if (allowedVerbose) {IPA_logRecorder("Initiated calculating isotopic profiles!")}
+        clust <- makeCluster(number_processing_threads)
+        clusterExport(clust, setdiff(ls(), c("clust", "nMoleFormVecMat")), envir = environment())
+        IsotopicProfileList <- tryCatch(parLapply(clust, 1:nMoleFormVecMat, function(i) {
+          IP_calculator(i)
+        }), warning = function(w) {stop("Isotopic profile calculations ran out of memory! Update parameter `FS0009` or apply a brute-force method `FS0005`!")})
+        stopCluster(clust)
+        if (allowedVerbose) {IPA_logRecorder("Completed calculating isotopic profiles!")}
       }
       ##
+      if (allowedVerbose) {IPA_logRecorder("Initiated calculating the database parameters!")}
+      clust <- makeCluster(number_processing_threads)
+      clusterExport(clust, c("parametersIPDBcalculator", "IsotopicProfileList", "molVecCharge"), envir = environment())
+      parametersIPDB <- do.call(rbind, parLapply(clust, 1:nMoleFormVecMat, function(i) {
+        parametersIPDBcalculator(i)
+      }))
       stopCluster(clust)
       ##
       ##########################################################################
       ##
-    } else if (osType == "Linux") {
+    } else {
       ##
-      ##########################################################################
-      ##
-      if (allowedVerbose) {IPA_logRecorder("Initiated calculating isotopic profiles!")}
-      IsotopicProfileList <- tryCatch(mclapply(1:nMoleFormVecMat, function(i) {
-        IP_calculator(i)
-      }, mc.cores = number_processing_threads), warning = function(w) {stop("Isotopic profile calculations ran out of memory! Update parameter `FS0009` or apply a brute-force method `FS0005`!")})
-      if (allowedVerbose) {IPA_logRecorder("Completed calculating isotopic profiles!")}
+      if (!allowedMustRunCalculation) {
+        if (allowedVerbose) {IPA_logRecorder("Initiated calculating isotopic profiles!")}
+        IsotopicProfileList <- tryCatch(mclapply(1:nMoleFormVecMat, function(i) {
+          IP_calculator(i)
+        }, mc.cores = number_processing_threads), warning = function(w) {stop("Isotopic profile calculations ran out of memory! Update parameter `FS0009` or apply a brute-force method `FS0005`!")})
+        if (allowedVerbose) {IPA_logRecorder("Completed calculating isotopic profiles!")}
+      }
       ##
       if (allowedVerbose) {IPA_logRecorder("Initiated calculating the database parameters!")}
       parametersIPDB <- do.call(rbind, mclapply(1:nMoleFormVecMat, function(i) {
@@ -323,6 +335,9 @@ molecularFormula2IPdb <- function(molecularFormulaDatabase, retentionTime = NULL
       }, mc.cores = number_processing_threads))
       ##
       closeAllConnections()
+      ##
+      ##########################################################################
+      ##
     }
   }
   ##
