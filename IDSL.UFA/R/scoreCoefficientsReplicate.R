@@ -44,7 +44,6 @@ scoreCoefficientsReplicate <- function(PARAM_ScoreFunc) {
   if (!dir.exists(output_path_score_function_calculations)) {
     dir.create(output_path_score_function_calculations, recursive = TRUE)
   }
-  opendir(output_path_score_function_calculations)
   ##
   RTf <- as.numeric(excelfile$'RetentionTime(min)')
   ##

@@ -134,7 +134,6 @@ UFA_workflow <- function(spreadsheet) {
       if (!dir.exists(output_path_annotated_mf_tables)) {
         dir.create(output_path_annotated_mf_tables, recursive = TRUE)
       }
-      opendir(output_path_annotated_mf_tables)
       ##
       parallelizationMode <- PARAM[which(PARAM[, 1] == 'PARAM0015'), 2]
       ##
@@ -177,7 +176,6 @@ UFA_workflow <- function(spreadsheet) {
         if (!dir.exists(outputProfileSpectra)) {
           dir.create(outputProfileSpectra, recursive = TRUE)
         }
-        opendir(outputProfileSpectra)
         IPA_logRecorder("UFA_spectra comparison plots with theoretical isotopic profiles are stored in the `UFA_spectra` folder!")
       } else {
         exportSpectraCheck <- FALSE
@@ -197,7 +195,7 @@ UFA_workflow <- function(spreadsheet) {
       }
       ##
       IPA_logRecorder("Initiated molecular formula annotation on individual peaklists!")
-      IPA_logRecorder("Individual annotated peaklists tables are stored in `.Rdata` and `.csv` formats in the `annotated_mf_tables` folder!")
+      IPA_logRecorder("Individual annotated peaklist tables are stored in `.Rdata` and `.csv` formats in the `annotated_mf_tables` folder!")
       ##
       call_molecular_formula_annotator <- function(i) {
         peaklistFileName <- paste0("peaklist_", file_name_hrms[i], ".Rdata")

@@ -1,6 +1,6 @@
 UFA_xlsxAnalyzer <- function(spreadsheet) {
   ##
-  IPA_message("Initiated testing the spreadsheet consistency!", failedMessage= FALSE)
+  IPA_message("Initiated testing the `UFA` tab spreadsheet consistency!", failedMessage= FALSE)
   ##
   PARAM_ECS <- NULL
   PARAM_FormSource <- NULL
@@ -560,8 +560,9 @@ UFA_xlsxAnalyzer <- function(spreadsheet) {
   ##
   if (!checkpoint_parameter) {
     listPARAM <- NULL
+    IPA_message("The spreadsheet is not consistent with the IDSL.UFA workflow!", failedMessage= TRUE)
   } else {
-    IPA_message("The spreadsheet is consistent with the IDSL.UFA workflow!", failedMessage= FALSE)
+    IPA_message("Completed testing the `UFA` spreadsheet tab consistency!!", failedMessage= FALSE)
     listPARAM <- list(PARAM, PARAM_ECS, PARAM_FormSource, PARAM_ScoreFunc)
     names(listPARAM) <- c("PARAM", "PARAM_ECS", "PARAM_FormSource", "PARAM_ScoreFunc")
   }
